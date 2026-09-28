@@ -247,7 +247,18 @@ async function api(req, res, url) {
   const method = req.method;
   const pathname = url.pathname;
 
-  if (method === "GET" && pathname === "/api/health") return json(res, 200, { status: "ok" });
+  if (method === "GET" && pathname === "/api/health") {
+    return json(res, 200, {
+      status: "ok",
+      config: {
+        adminEmailConfigured: Boolean(ADMIN_EMAIL),
+        adminPasswordConfigured: Boolean(ADMIN_PASSWORD),
+        resendApiKeyConfigured: Boolean(RESEND_API_KEY),
+        sessionSecretConfigured: Boolean(SESSION_SECRET && SESSION_SECRET !== "change-me-before-production"),
+        emailFrom: EMAIL_FROM
+      }
+    });
+  }
 
   if (method === "POST" && pathname === "/api/auth/register") {
     const input = await body(req);

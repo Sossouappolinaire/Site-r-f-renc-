@@ -246,6 +246,16 @@
       return go("");
     }
     window.addEventListener("hashchange", render);
+    document.addEventListener("click", (event) => {
+      const link = event.target.closest("a");
+      if (!link) return;
+      const href = link.getAttribute("href");
+      if (href === "#") event.preventDefault();
+      if (href === "#methode") {
+        event.preventDefault();
+        document.getElementById("methode")?.scrollIntoView({ behavior: "smooth" });
+      }
+    });
     window.addEventListener("DOMContentLoaded", () => { bootLoader(); render(); });
   </script>
 </body>
