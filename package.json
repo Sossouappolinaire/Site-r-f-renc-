@@ -1,0 +1,12 @@
+{
+  "name": "coeur-connexions",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Cœur & Connexions - espace de rencontre confidentiel",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

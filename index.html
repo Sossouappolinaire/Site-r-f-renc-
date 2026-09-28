@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#24172e">
+  <meta name="description" content="Cœur & Connexions, une rencontre privée, humaine et accompagnée.">
+  <title>Cœur & Connexions — Une rencontre plus humaine</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap');
+    :root{--ink:#25172d;--plum:#4b2857;--deep:#24172e;--rose:#ed7898;--rose2:#ffd7e2;--cream:#fbf7f4;--muted:#7c6d82;--line:#ebdfe8;--white:#fff;--green:#42c39a;--amber:#f4b65d;--blue:#74aef5;--shadow:0 30px 90px rgba(54,25,65,.14)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--cream);color:var(--ink);font-family:"DM Sans",system-ui,sans-serif;line-height:1.55}button,input,select,textarea{font:inherit}button,a{cursor:pointer}a{text-decoration:none;color:inherit}.hidden{display:none!important}
+    .page{min-height:100vh;overflow:hidden;background:radial-gradient(circle at 12% -8%,#ffe5ed 0,transparent 27%),radial-gradient(circle at 100% 15%,#e8ddfa 0,transparent 25%),var(--cream)}
+    .wrap{width:min(1180px,calc(100% - 40px));margin:auto}.nav{display:flex;align-items:center;justify-content:space-between;padding:26px 0;position:relative;z-index:2}.brand{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:-.03em;font-size:18px}.brand-mark{width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:var(--deep);color:#fff;box-shadow:0 10px 22px #32163d25;font-size:21px}.nav-actions{display:flex;align-items:center;gap:10px}.btn{border:0;border-radius:13px;min-height:46px;padding:12px 18px;display:inline-flex;justify-content:center;align-items:center;gap:9px;font-weight:700;transition:transform .2s,box-shadow .2s,background .2s}.btn:hover{transform:translateY(-2px);box-shadow:0 12px 24px #3e1e4b1d}.btn-primary{background:var(--deep);color:#fff}.btn-light{background:#fff;border:1px solid var(--line);color:var(--plum)}.btn-pink{background:var(--rose2);color:var(--plum)}.btn-plain{background:transparent;color:var(--muted);padding-left:8px;padding-right:8px}.btn-danger{background:#fff0f3;color:#b73c60}.btn-small{min-height:36px;padding:8px 12px;border-radius:10px;font-size:12px}
+    .hero{min-height:650px;display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:center;padding:54px 0 92px}.kicker{display:inline-flex;gap:9px;align-items:center;color:var(--rose);font-size:11px;letter-spacing:.17em;text-transform:uppercase;font-weight:800}.kicker:before{content:"";height:2px;width:25px;background:currentColor}.hero h1{font:500 clamp(50px,7vw,88px)/.98 "Playfair Display",Georgia,serif;letter-spacing:-.065em;color:var(--plum);margin:19px 0 22px;max-width:660px}.hero h1 em{color:var(--rose);font-style:normal}.lead{font-size:18px;line-height:1.65;color:var(--muted);max-width:530px}.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}.trust-line{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin-top:22px}.trust-icons{display:flex}.trust-icons span{width:26px;height:26px;display:grid;place-items:center;border-radius:50%;background:var(--rose2);border:2px solid var(--cream);margin-right:-7px;font-size:11px}.hero-art{height:550px;position:relative}.art-orbit{position:absolute;border:1px solid #d8b6cb;border-radius:50%;inset:15px 5px 15px 25px;transform:rotate(-19deg)}.art-orbit:after{content:"";position:absolute;width:12px;height:12px;right:10%;top:7%;background:var(--rose);border-radius:50%;box-shadow:0 0 0 8px #ed789822}.art-card{position:absolute;inset:49px 42px 27px 76px;border-radius:45% 45% 25px 25px;background:linear-gradient(145deg,#a75e81,#f2a1aa 58%,#fad4be);overflow:hidden;box-shadow:var(--shadow);transform:rotate(3deg)}.art-card:before{content:"";position:absolute;width:190px;height:230px;left:50%;top:63px;transform:translateX(-50%);border-radius:48% 48% 42% 42%;background:linear-gradient(140deg,#3a213a 0 34%,#cf7a80 35% 100%);box-shadow:0 183px 0 88px #f2c5b8}.art-card:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,#38213d99)}.floating{position:absolute;background:#fff;border-radius:19px;padding:14px 16px;box-shadow:0 20px 45px #4b285725;z-index:1}.floating strong{display:block;color:var(--plum);font-size:13px}.floating small{color:var(--muted);font-size:11px}.float-note{top:38px;right:0;transform:rotate(6deg)}.float-heart{bottom:34px;left:0;transform:rotate(-7deg);font-size:25px;color:var(--rose)}.float-heart strong{font-family:"Playfair Display",Georgia,serif;font-size:17px}.art-caption{position:absolute;right:16px;bottom:15px;color:#fff;z-index:2;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+    .section{padding:78px 0}.section-head{display:flex;justify-content:space-between;align-items:end;gap:30px;margin-bottom:27px}.section-head h2{font:500 clamp(31px,4.2vw,50px)/1.03 "Playfair Display",Georgia,serif;color:var(--plum);letter-spacing:-.055em;margin:10px 0 0;max-width:620px}.section-head>p{max-width:400px;color:var(--muted);margin:0}.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.feature{background:#fff;border:1px solid var(--line);border-radius:21px;padding:24px;min-height:220px;box-shadow:0 12px 30px #4b28570a}.feature-number{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:var(--rose2);color:var(--rose);font-weight:800;margin-bottom:38px}.feature h3{font-size:17px;color:var(--plum);margin:0 0 9px}.feature p{color:var(--muted);font-size:14px;margin:0}.quote-section{background:var(--deep);color:#fff;border-radius:30px;padding:54px 64px;display:flex;align-items:center;justify-content:space-between;gap:25px}.quote-section h2{font:500 clamp(30px,4vw,50px)/1.03 "Playfair Display",Georgia,serif;max-width:650px;letter-spacing:-.05em;margin:8px 0}.quote-section p{color:#dbcadd;max-width:550px}.footer{padding:35px 0 48px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:15px}
+    .auth-page{min-height:100vh;display:grid;grid-template-columns:.8fr 1.2fr;background:var(--cream)}.auth-visual{padding:34px 7vw;background:var(--deep);color:#fff;display:flex;flex-direction:column;justify-content:space-between;min-height:100vh;position:relative;overflow:hidden}.auth-visual:before,.auth-visual:after{content:"";position:absolute;border:1px solid #f6c9da3b;border-radius:50%;width:440px;height:440px;right:-220px;top:17%;}.auth-visual:after{width:260px;height:260px;right:18%;top:auto;bottom:-90px;border-color:#8d72bf4c}.auth-visual .brand{position:relative;z-index:1}.auth-visual .brand-mark{background:var(--rose);color:#fff}.visual-copy{position:relative;z-index:1;max-width:420px}.visual-copy h1{font:500 clamp(38px,5vw,64px)/1 "Playfair Display",Georgia,serif;margin:22px 0 15px;letter-spacing:-.05em}.visual-copy p{color:#dbcadd}.visual-points{position:relative;z-index:1;display:grid;gap:12px;color:#f9e8ee;font-size:13px}.visual-points div{display:flex;gap:10px;align-items:center}.visual-points b{width:25px;height:25px;display:grid;place-items:center;border-radius:50%;background:#ffffff16;color:var(--rose)}.auth-main{display:grid;place-items:center;padding:35px 7vw}.auth-card{width:min(100%,600px);background:#fff;border:1px solid var(--line);border-radius:26px;padding:34px;box-shadow:var(--shadow)}.auth-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:35px}.back{font-size:12px;color:var(--muted)}.auth-card h2{font:500 clamp(31px,4vw,44px)/1.05 "Playfair Display",Georgia,serif;color:var(--plum);letter-spacing:-.05em;margin:13px 0 10px}.auth-card>p{color:var(--muted);font-size:14px;margin:0}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:24px}.field{display:flex;flex-direction:column;gap:7px}.field.full{grid-column:1/-1}.field label{font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--plum)}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);padding:12px 13px;outline:none;transition:.2s}.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--rose);box-shadow:0 0 0 4px #ed78981d}.checkline{display:flex;gap:10px;align-items:flex-start;color:var(--muted);font-size:12px;line-height:1.5;margin-top:17px}.checkline input{accent-color:var(--rose);margin-top:3px}.checkline a{color:var(--rose);font-weight:700}.form-footer{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-top:23px}.hint{font-size:12px;color:var(--muted)}.alert{padding:12px 14px;border-radius:12px;background:#fff0f3;color:#a33e5e;margin-top:16px;font-size:13px}.alert.success{background:#e3f8ef;color:#277458}.upload{border:1.5px dashed #d6bfd0;padding:15px;border-radius:13px;background:#fffafd}.upload input{border:0;padding:0}.code-input{font-size:30px;letter-spacing:.32em;text-align:center;color:var(--plum);font-weight:800}.code-hint{text-align:center;color:var(--muted);font-size:12px;margin-top:10px}
+    .boot{position:fixed;inset:0;background:var(--deep);z-index:50;display:grid;place-items:center;color:#fff;transition:opacity .5s,visibility .5s}.boot.done{opacity:0;visibility:hidden}.boot-inner{width:min(390px,calc(100% - 48px));text-align:center}.boot-heart{font-size:40px;color:var(--rose);animation:beat 1s infinite}.boot p{font-family:"Playfair Display",Georgia,serif;font-size:20px;margin:12px 0 22px}.boot-track{height:8px;border-radius:99px;background:#ffffff1c;overflow:hidden;display:flex}.boot-track i{height:100%;width:0;transition:width .18s linear}.boot-track i:nth-child(1){background:var(--rose)}.boot-track i:nth-child(2){background:var(--amber)}.boot-track i:nth-child(3){background:var(--green)}.boot-track i:nth-child(4){background:var(--blue)}.boot-percent{font-size:11px;display:block;color:#cbb5cc;margin-top:10px}@keyframes beat{50%{transform:scale(1.12)}}.overlay{position:fixed;inset:0;background:#24172ecc;backdrop-filter:blur(10px);z-index:40;display:grid;place-items:center;padding:20px}.modal{width:min(470px,100%);background:#fff;border-radius:25px;padding:30px;box-shadow:var(--shadow);text-align:center}.modal-icon{width:66px;height:66px;display:grid;place-items:center;border-radius:50%;background:var(--rose2);color:var(--rose);font-size:30px;margin:0 auto 15px}.modal h3{font:500 29px/1.05 "Playfair Display",Georgia,serif;color:var(--plum);margin:0 0 9px}.modal p{color:var(--muted);font-size:13px}.progress-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:22px}.progress-track{height:10px;background:#f2e6ed;border-radius:99px;overflow:hidden;margin-top:8px}.progress-value{height:100%;width:0;background:linear-gradient(90deg,var(--rose),var(--amber),var(--green));transition:width .2s}.success-check{font-size:48px;color:var(--green);margin:4px 0 7px}.toast{position:fixed;right:22px;bottom:22px;padding:13px 17px;background:var(--deep);color:#fff;border-radius:12px;box-shadow:var(--shadow);z-index:60;font-size:13px}.toast.good{background:#277458}
+    .app-shell{min-height:100vh;background:radial-gradient(circle at 95% 0,#f0e2fa 0,transparent 26%),var(--cream)}.topbar{background:#fff;border-bottom:1px solid var(--line)}.topbar-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}.user-chip{display:flex;align-items:center;gap:10px;font-size:13px}.avatar{width:37px;height:37px;border-radius:12px;display:grid;place-items:center;background:var(--rose2);color:var(--plum);font-weight:800}.workspace{padding:40px 0}.workspace-grid{display:grid;grid-template-columns:220px 1fr;gap:30px}.side{position:sticky;top:20px;align-self:start}.side-title{font-size:10px;text-transform:uppercase;letter-spacing:.16em;font-weight:800;color:var(--muted);margin:0 0 10px}.side-btn{width:100%;text-align:left;border:0;background:transparent;border-radius:11px;padding:11px 13px;color:var(--muted);font-weight:700;margin-bottom:4px}.side-btn.active,.side-btn:hover{background:var(--rose2);color:var(--plum)}.welcome{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:26px}.welcome h2{font:500 clamp(31px,4vw,49px)/1.05 "Playfair Display",Georgia,serif;color:var(--plum);letter-spacing:-.05em;margin:9px 0}.welcome p{color:var(--muted);margin:0}.pill{display:inline-flex;align-items:center;padding:6px 10px;border-radius:99px;background:#e0f6ee;color:#277458;font-size:11px;font-weight:800;white-space:nowrap}.dashboard-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}.metric{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px}.metric strong{font:600 31px "Playfair Display",Georgia,serif;color:var(--plum);display:block}.metric span{font-size:12px;color:var(--muted)}.content-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}.panel,.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:0 10px 28px #4b285708}.panel h3{color:var(--plum);margin:0;font-size:17px}.panel>p{color:var(--muted);font-size:13px}.announcement{padding:15px 0;border-bottom:1px solid var(--line)}.announcement:last-child{border-bottom:0}.announcement time{font-size:10px;color:var(--rose);font-weight:700;text-transform:uppercase}.announcement h4{font-size:14px;color:var(--plum);margin:4px 0}.announcement p{margin:0;color:var(--muted);font-size:13px}.privacy{background:#fff8e9;border-left:3px solid var(--amber);padding:13px 15px;border-radius:0 11px 11px 0;color:#80663d!important;font-size:12px!important}.message-list{display:flex;flex-direction:column;gap:12px;max-height:440px;overflow:auto;margin-top:17px}.message{max-width:84%;padding:12px 14px;border-radius:15px;background:#fff1f5;font-size:13px}.message.user{align-self:flex-end;background:var(--deep);color:#fff}.message small{display:block;opacity:.6;font-size:10px;margin-top:5px}.composer{display:flex;gap:8px;margin-top:14px}.composer textarea{flex:1;border:1px solid var(--line);border-radius:12px;padding:12px;min-height:47px;resize:vertical}.photo-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:17px}.slot{aspect-ratio:1;display:grid;place-items:center;border:1.5px dashed #d7bfd0;border-radius:13px;background:#fffafd;color:var(--muted);font-size:11px;overflow:hidden}.slot img{width:100%;height:100%;object-fit:cover}.admin-table{width:100%;border-collapse:collapse}.admin-table th,.admin-table td{text-align:left;padding:12px 8px;border-bottom:1px solid var(--line);font-size:12px}.admin-table th{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}.status-pending{color:#b97822}.status-active{color:#277458}.check{display:flex;align-items:center;gap:8px;padding:8px;border-radius:9px}.candidate-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}.candidate{border:1px solid var(--line);border-radius:13px;padding:12px}.candidate p{margin:3px 0;font-size:11px}.candidate-photos{display:grid;grid-template-columns:1fr 1fr;gap:5px}.candidate-photos img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px}.section-head{align-items:center;margin-bottom:15px}.section-head h3{margin:0}.section-head p{color:var(--muted);font-size:12px;margin:4px 0 0}
+    @media(max-width:900px){.hero{grid-template-columns:1fr;padding-top:30px}.hero-art{height:430px;max-width:570px;width:100%;margin:auto}.feature-grid{grid-template-columns:1fr 1fr}.content-grid{grid-template-columns:1fr}.workspace-grid{grid-template-columns:1fr}.side{position:static;display:flex;overflow:auto;gap:4px}.side-title{display:none}.side-btn{white-space:nowrap;width:auto}.auth-page{grid-template-columns:1fr}.auth-visual{display:none}}
+    @media(max-width:590px){.wrap{width:calc(100% - 24px)}.nav-actions .btn-light{display:none}.hero h1{font-size:54px}.hero-art{height:350px}.art-card{inset:35px 35px 20px 57px}.float-note{right:0}.section{padding:55px 0}.section-head{display:block}.section-head>p{margin-top:16px}.feature-grid,.dashboard-grid{grid-template-columns:1fr}.quote-section{padding:30px 24px;display:block}.quote-section .btn{margin-top:18px}.footer{display:block}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.auth-main{padding:20px 12px}.auth-card{padding:23px}.form-footer{align-items:stretch;flex-direction:column}.form-footer .btn{width:100%}.welcome{align-items:flex-start;flex-direction:column}.panel{padding:18px}.admin-table{display:block;overflow:auto}.candidate-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div id="boot" class="boot">
+    <div class="boot-inner">
+      <div class="boot-heart">♡</div>
+      <p>Votre histoire commence ici</p>
+      <div class="boot-track"><i></i><i></i><i></i><i></i></div>
+      <span id="bootPercent" class="boot-percent">0%</span>
+    </div>
+  </div>
+  <div id="root"></div>
+  <div id="overlay"></div>
+  <div id="toast" class="toast hidden"></div>
+  <script>
+    const root = document.getElementById("root");
+    const overlay = document.getElementById("overlay");
+    const toastEl = document.getElementById("toast");
+    const state = { user: null, role: null, view: "overview", messages: [], announcements: [], users: [], pendingEmail: "" };
+    const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[char]));
+    const initials = (user) => ((user?.firstName || "C")[0] + (user?.lastName || "C")[0]).toUpperCase();
+    const date = (value) => new Intl.DateTimeFormat("fr-FR", { day:"numeric", month:"short" }).format(new Date(value));
+    const api = async (path, options = {}) => {
+      const response = await fetch(path, { headers: { "Content-Type":"application/json", ...(options.headers || {}) }, ...options });
+      let result = {};
+      try { result = await response.json(); } catch (_error) {}
+      if (!response.ok) throw new Error(result.error || "Une erreur est survenue.");
+      return result;
+    };
+    function toast(message, good = false) {
+      toastEl.textContent = message;
+      toastEl.className = "toast" + (good ? " good" : "");
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => { toastEl.className = "toast hidden"; }, 3600);
+    }
+    function go(route) {
+      location.hash = route;
+      render();
+    }
+    function bootLoader() {
+      const bars = [...document.querySelectorAll(".boot-track i")];
+      const percent = document.getElementById("bootPercent");
+      let value = 0;
+      const timer = setInterval(() => {
+        value = Math.min(100, value + Math.ceil(Math.random() * 13));
+        const each = 25;
+        bars.forEach((bar, index) => { bar.style.width = `${Math.max(0, Math.min(25, value - index * each)) * 4}%`; });
+        percent.textContent = `${value}%`;
+        if (value >= 100) {
+          clearInterval(timer);
+          setTimeout(() => document.getElementById("boot").classList.add("done"), 220);
+        }
+      }, 75);
+    }
+    function nav() {
+      return `<div class="topbar"><div class="wrap topbar-inner"><a class="brand" href="#" onclick="go('')"><span class="brand-mark">♡</span><span>Cœur & Connexions</span></a><div class="user-chip"><span class="avatar">${initials(state.user)}</span><span><strong>${esc(state.user?.firstName || "Équipe")}</strong><br><small class="hint">${state.role === "admin" ? "Administration" : "Espace privé"}</small></span><button class="btn btn-light btn-small" onclick="logout()">Quitter</button></div></div></div>`;
+    }
+    function shell(side, content) {
+      return `<div class="app-shell">${nav()}<main class="wrap workspace"><div class="workspace-grid"><aside class="side"><p class="side-title">${state.role === "admin" ? "Pilotage" : "Mon espace"}</p>${side}</aside><section>${content}</section></div></main></div>`;
+    }
+    function authFrame(content, visualTitle = "Une rencontre qui vous ressemble.") {
+      return `<div class="auth-page"><aside class="auth-visual"><a class="brand" href="#" onclick="go('')"><span class="brand-mark">♡</span><span>Cœur & Connexions</span></a><div class="visual-copy"><span class="kicker">Un espace à part</span><h1>${visualTitle}</h1><p>Un accompagnement discret pour avancer avec plus de confiance, moins de bruit et de vraies intentions.</p></div><div class="visual-points"><div><b>♡</b> Confidentialité au centre</div><div><b>✦</b> Profils examinés avec attention</div><div><b>↗</b> Vous gardez le choix à chaque étape</div></div></aside><main class="auth-main">${content}</main></div>`;
+    }
+    function login() {
+      root.innerHTML = authFrame(`<div class="auth-card"><div class="auth-top"><a class="brand" href="#" onclick="go('')"><span class="brand-mark">♡</span><span>Cœur & Connexions</span></a><a class="back" href="#" onclick="go('')">Accueil</a></div><span class="kicker">Espace confidentiel</span><h2>Ravi de vous revoir.</h2><p>Retrouvez vos échanges et votre parcours privé.</p><form id="loginForm"><div class="field" style="margin-top:25px"><label>ADRESSE EMAIL</label><input name="email" type="email" autocomplete="email" placeholder="vous@exemple.com" required></div><div class="field" style="margin-top:15px"><label>MOT DE PASSE</label><input name="password" type="password" autocomplete="current-password" placeholder="Votre mot de passe" required></div><div id="loginError"></div><div class="form-footer"><a href="#" class="btn btn-plain" onclick="go('inscription')">Créer un compte</a><button class="btn btn-primary">Se connecter <span>→</span></button></div></form></div>`);
+      document.getElementById("loginForm").onsubmit = async (event) => {
+        event.preventDefault();
+        const form = new FormData(event.target);
+        try {
+          const result = await api("/api/auth/login", { method:"POST", body:JSON.stringify({ email:form.get("email"), password:form.get("password") }) });
+          if (result.requiresCode) {
+            state.pendingEmail = form.get("email");
+            codeVerification();
+            return;
+          }
+          state.user = result.user; state.role = result.role;
+          go(result.role === "admin" ? "admin" : "espace");
+        } catch (error) {
+          document.getElementById("loginError").innerHTML = `<div class="alert">${esc(error.message)}</div>`;
+        }
+      };
+    }
+    function codeVerification() {
+      root.innerHTML = authFrame(`<div class="auth-card"><div class="auth-top"><a class="brand" href="#" onclick="go('')"><span class="brand-mark">♡</span><span>Cœur & Connexions</span></a><a class="back" href="#" onclick="go('connexion')">Retour</a></div><span class="kicker">Dernière vérification</span><h2>Votre code secret.</h2><p>Nous avons envoyé un code unique à <strong>${esc(state.pendingEmail)}</strong>. Il ne peut être utilisé qu’une seule fois.</p><form id="codeForm"><div class="field" style="margin-top:27px"><label>CODE À 6 CHIFFRES</label><input class="code-input" name="code" inputmode="numeric" maxlength="6" pattern="\\d{6}" placeholder="000000" required></div><div id="codeError"></div><button class="btn btn-primary" style="width:100%;margin-top:20px">Ouvrir mon espace <span>→</span></button></form><p class="code-hint">Vous ne trouvez pas l’email ? Vérifiez vos indésirables.</p><button class="btn btn-plain" style="margin-top:8px" onclick="resendCode()">Renvoyer un code</button></div>`, "La confiance commence par un espace sécurisé.");
+      document.getElementById("codeForm").onsubmit = async (event) => {
+        event.preventDefault();
+        const form = new FormData(event.target);
+        try {
+          const result = await api("/api/auth/verify-code", { method:"POST", body:JSON.stringify({ code:form.get("code") }) });
+          state.user = result.user; state.role = "user"; go("espace");
+        } catch (error) {
+          document.getElementById("codeError").innerHTML = `<div class="alert">${esc(error.message)}</div>`;
+        }
+      };
+    }
+    async function resendCode() {
+      try { await api("/api/auth/resend-code", { method:"POST" }); toast("Un nouveau code vient d’être envoyé.", true); }
+      catch (error) { toast(error.message); }
+    }
+    function register() {
+      root.innerHTML = authFrame(`<div class="auth-card"><div class="auth-top"><a class="brand" href="#" onclick="go('')"><span class="brand-mark">♡</span><span>Cœur & Connexions</span></a><a class="back" href="#" onclick="go('')">Retour</a></div><span class="kicker">Votre histoire commence ici</span><h2>Créer votre espace.</h2><p>Une demande, puis une validation humaine avant votre première connexion.</p><form id="registerForm"><div class="form-grid"><div class="field"><label>PRÉNOM</label><input name="firstName" autocomplete="given-name" required></div><div class="field"><label>NOM</label><input name="lastName" autocomplete="family-name" required></div><div class="field"><label>TÉLÉPHONE</label><input name="phone" type="tel" required></div><div class="field"><label>EMAIL</label><input name="email" type="email" autocomplete="email" required></div><div class="field"><label>MOT DE PASSE</label><input name="password" type="password" minlength="8" required></div><div class="field"><label>CONFIRMATION</label><input name="passwordConfirmation" type="password" minlength="8" required></div><div class="field"><label>JE SUIS</label><select name="gender"><option value="femme">Une femme</option><option value="homme">Un homme</option><option value="autre">Autre</option></select></div><div class="field"><label>JE SOUHAITE RENCONTRER</label><select name="encounterType"><option value="femme">Une femme</option><option value="homme">Un homme</option><option value="tous">Tout profil compatible</option></select></div><div class="field"><label>TYPE DE COMPTE</label><select name="accountType"><option value="rencontre">Rencontre</option><option value="plan_business">Plan business</option></select></div><div class="field"><label>FORMULE</label><select name="planType"><option value="rencontre_simple">Rencontre simple</option><option value="premium">Premium</option><option value="accompagnement">Accompagnement</option></select></div><div class="field full"><label>PHOTO DE PROFIL <span class="hint">(facultatif)</span></label><div class="upload"><input id="profilePhoto" type="file" accept="image/*"><span class="hint">Les photos restent privées et ne sont jamais publiées automatiquement.</span></div></div></div><label class="checkline"><input name="termsAccepted" type="checkbox" required><span>J’accepte les conditions de discrétion et de responsabilité : je comprends que la plateforme facilite la mise en relation sans garantir l’identité ou le comportement des utilisateurs. L’administrateur n’est pas partie à mes échanges ni à mes engagements.</span></label><div id="registerError"></div><div class="form-footer"><span class="hint">Validation manuelle par l’équipe.</span><button class="btn btn-primary">Envoyer ma demande <span>→</span></button></div></form></div>`, "Une belle histoire mérite un bon départ.");
+      let photoData = null;
+      document.getElementById("profilePhoto").onchange = async (event) => { photoData = await fileData(event.target.files[0]); };
+      document.getElementById("registerForm").onsubmit = async (event) => {
+        event.preventDefault();
+        const form = new FormData(event.target);
+        const payload = { firstName:form.get("firstName"), lastName:form.get("lastName"), phone:form.get("phone"), email:form.get("email"), password:form.get("password"), passwordConfirmation:form.get("passwordConfirmation"), gender:form.get("gender"), accountType:form.get("accountType"), encounterType:form.get("encounterType"), planType:form.get("planType"), profilePhoto:photoData, termsAccepted:form.get("termsAccepted") === "on" };
+        try {
+          const result = await progressAction("Création de votre espace", () => api("/api/auth/register", { method:"POST", body:JSON.stringify(payload) }));
+          await successAction("Demande envoyée", "Votre inscription est bien enregistrée. L’équipe va l’examiner et vous recevrez un email dès sa confirmation.");
+          state.pendingEmail = result.user.email;
+          go("connexion");
+        } catch (error) {
+          document.getElementById("registerError").innerHTML = `<div class="alert">${esc(error.message)}</div>`;
+        }
+      };
+    }
+    function fileData(file) {
+      if (!file) return Promise.resolve(null);
+      return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); });
+    }
+    function progressAction(label, action) {
+      overlay.innerHTML = `<div class="modal"><div class="modal-icon">♡</div><h3>${label}</h3><p>Nous préparons votre espace avec soin.</p><div class="progress-label"><span id="progressText">Vérification des informations</span><b id="progressNumber">0%</b></div><div class="progress-track"><div id="progressValue" class="progress-value"></div></div></div>`;
+      overlay.classList.remove("hidden");
+      const steps = ["Vérification des informations", "Sécurisation du compte", "Préparation de votre espace", "Presque terminé"];
+      let progress = 0;
+      const timer = setInterval(() => { progress = Math.min(92, progress + Math.ceil(Math.random() * 9)); document.getElementById("progressValue").style.width = `${progress}%`; document.getElementById("progressNumber").textContent = `${progress}%`; document.getElementById("progressText").textContent = steps[Math.min(3, Math.floor(progress / 25))]; }, 130);
+      return action().then((result) => new Promise((resolve) => { clearInterval(timer); document.getElementById("progressValue").style.width = "100%"; document.getElementById("progressNumber").textContent = "100%"; setTimeout(() => { overlay.classList.add("hidden"); overlay.innerHTML = ""; resolve(result); }, 480); })).catch((error) => { clearInterval(timer); overlay.classList.add("hidden"); overlay.innerHTML = ""; throw error; });
+    }
+    function successAction(title, message) {
+      return new Promise((resolve) => { overlay.innerHTML = `<div class="modal"><div class="success-check">✓</div><h3>${title}</h3><p>${message}</p></div>`; overlay.classList.remove("hidden"); setTimeout(() => { overlay.classList.add("hidden"); overlay.innerHTML = ""; resolve(); }, 3000); });
+    }
+    async function loadUser() {
+      const [me, announcements, messages] = await Promise.all([api("/api/me"), api("/api/announcements"), api("/api/messages")]);
+      state.user = me; state.announcements = announcements; state.messages = messages;
+    }
+    function userSpace() {
+      const side = `<button class="side-btn active" onclick="setView('overview')">Vue d’ensemble</button><button class="side-btn" onclick="setView('messages')">Messages</button><button class="side-btn" onclick="setView('photos')">Mes photos</button>`;
+      const content = `<div class="welcome"><div><span class="kicker">Espace privé</span><h2>Bonjour ${esc(state.user.firstName)}.</h2><p>Chaque étape reste entre vos mains.</p></div><span class="pill">${state.user.status === "active" ? "Compte confirmé" : "En validation"}</span></div><div id="userContent"></div>`;
+      root.innerHTML = shell(side, content); setView(state.view);
+    }
+    function setView(view) {
+      state.view = view;
+      document.querySelectorAll(".side-btn").forEach((button, index) => button.classList.toggle("active", ["overview","messages","photos"][index] === view));
+      const element = document.getElementById("userContent");
+      if (!element) return;
+      if (view === "overview") element.innerHTML = `<div class="dashboard-grid"><div class="metric"><strong>${state.announcements.length}</strong><span>annonces de l’équipe</span></div><div class="metric"><strong>${state.messages.length}</strong><span>messages privés</span></div><div class="metric"><strong>${state.user.photoCount}/3</strong><span>photos ajoutées</span></div></div><div class="content-grid"><div class="panel"><div class="section-head"><div><h3>Les nouvelles de l’équipe</h3><p>Les informations importantes pour votre parcours.</p></div></div>${state.announcements.map((item) => `<div class="announcement"><time>${date(item.createdAt)}</time><h4>${esc(item.title)}</h4><p>${esc(item.body)}</p></div>`).join("")}</div><div class="panel"><h3>Votre confidentialité</h3><p class="privacy">Votre profil reste privé. Les photos ne sont révélées qu’après votre accord et la confirmation de l’équipe.</p><button class="btn btn-pink" onclick="setView('photos')">Ajouter mes 3 photos</button></div></div>`;
+      if (view === "messages") {
+        element.innerHTML = `<div class="panel"><h3>Échanges avec l’équipe</h3><p>Posez vos questions directement à l’équipe d’accompagnement.</p><div class="message-list">${state.messages.map((message) => `<div class="message ${message.senderRole === "user" ? "user" : ""}">${esc(message.body)}${message.selectedProfiles?.length ? candidateCards(message.selectedProfiles) : ""}<small>${date(message.createdAt)}</small></div>`).join("")}</div><form id="composer" class="composer"><textarea name="body" placeholder="Écrivez votre message…" required></textarea><button class="btn btn-primary">Envoyer</button></form></div>`;
+        document.getElementById("composer").onsubmit = sendMessage;
+      }
+      if (view === "photos") element.innerHTML = `<div class="panel"><h3>Vos trois photos privées</h3><p>Ajoutez exactement trois photos pour permettre une mise en relation personnalisée.</p><div class="photo-slots" id="photoSlots">${[0,1,2].map((index) => `<div class="slot">${state.user.profilePhoto && index === 0 ? `<img src="${state.user.profilePhoto}" alt="">` : `Photo ${index + 1}`}</div>`).join("")}</div><div class="upload" style="margin-top:17px"><input id="photosInput" type="file" accept="image/*" multiple><div class="hint">Sélectionnez trois images à enregistrer.</div></div><button class="btn btn-primary" style="margin-top:15px" onclick="savePhotos()">Enregistrer mes photos</button></div>`;
+    }
+    function candidateCards(list) {
+      return `<div class="candidate-grid">${list.map((profile) => `<div class="candidate"><strong>${esc(profile.displayName)}</strong><p class="hint">${esc(profile.gender)}</p>${profile.confirmed && profile.accepted ? `<div class="candidate-photos"><img src="${profile.photoOne}" alt=""><img src="${profile.photoTwo}" alt=""></div><span class="pill">Mise en relation confirmée</span>` : profile.accepted ? `<p class="privacy">Votre accord est enregistré. L’équipe doit encore confirmer.</p>` : `<button class="btn btn-pink btn-small" onclick="acceptMatch(${profile.id})">Découvrir ce profil</button>`}</div>`).join("")}</div>`;
+    }
+    async function sendMessage(event) {
+      event.preventDefault();
+      const form = new FormData(event.target);
+      try { const message = await api("/api/messages", { method:"POST", body:JSON.stringify({ body:form.get("body") }) }); state.messages.push(message); event.target.reset(); toast("Message envoyé", true); setView("messages"); } catch (error) { toast(error.message); }
+    }
+    async function savePhotos() {
+      const files = Array.from(document.getElementById("photosInput").files || []);
+      if (files.length !== 3) return toast("Sélectionnez exactement trois photos.");
+      try { state.user = await progressAction("Enregistrement de vos photos", async () => api("/api/profile/photos", { method:"POST", body:JSON.stringify({ photos:await Promise.all(files.map(fileData)) }) })); toast("Vos photos sont enregistrées.", true); setView("photos"); } catch (error) { toast(error.message); }
+    }
+    async function acceptMatch(id) {
+      try { await api(`/api/matches/${id}/accept`, { method:"POST" }); await loadUser(); toast("Votre choix a été transmis.", true); setView("messages"); } catch (error) { toast(error.message); }
+    }
+    async function loadAdmin() {
+      const [users, messages, announcements] = await Promise.all([api("/api/admin/users"), api("/api/messages"), api("/api/announcements")]);
+      state.users = users; state.messages = messages; state.announcements = announcements;
+    }
+    function adminSpace() {
+      const side = `<button class="side-btn active" onclick="adminView('dashboard')">Tableau de bord</button><button class="side-btn" onclick="adminView('inbox')">Messages entrants</button><button class="side-btn" onclick="adminView('users')">Profils inscrits</button>`;
+      root.innerHTML = shell(side, `<div class="welcome"><div><span class="kicker">Espace équipe</span><h2>Bonjour, équipe.</h2><p>Validez les demandes et accompagnez chaque personne avec attention.</p></div><span class="pill">Administration</span></div><div id="adminContent"></div>`); adminView("dashboard");
+    }
+    function adminView(view) {
+      document.querySelectorAll(".side-btn").forEach((button, index) => button.classList.toggle("active", ["dashboard","inbox","users"][index] === view));
+      const element = document.getElementById("adminContent");
+      if (view === "dashboard") element.innerHTML = `<div class="dashboard-grid"><div class="metric"><strong>${state.users.length}</strong><span>profils inscrits</span></div><div class="metric"><strong>${state.users.filter((user) => user.status === "pending").length}</strong><span>demandes à valider</span></div><div class="metric"><strong>${state.messages.filter((message) => message.senderRole === "user").length}</strong><span>messages entrants</span></div></div><div class="content-grid"><div class="panel"><h3>Publier une annonce</h3><form id="announcementForm" style="margin-top:15px"><div class="field"><label>TITRE</label><input name="title" required></div><div class="field" style="margin-top:12px"><label>MESSAGE</label><textarea name="body" required></textarea></div><button class="btn btn-primary" style="margin-top:12px">Publier</button></form></div><div class="panel"><h3>Règle de confiance</h3><p class="privacy">Une personne peut accepter une seule proposition. La révélation des photos arrive seulement après son accord et la confirmation de l’équipe.</p></div></div>`;
+      if (view === "inbox") element.innerHTML = `<div class="panel"><h3>Messages entrants</h3><div class="message-list">${state.messages.filter((message) => message.senderRole === "user").map((message) => `<div class="card"><small class="hint">Message #${message.id} · ${date(message.createdAt)}</small><p>${esc(message.body)}</p><button class="btn btn-pink btn-small" onclick="replyForm(${message.id})">Répondre avec des profils</button><div id="reply-${message.id}"></div></div>`).join("") || `<p class="hint">Aucun message entrant pour le moment.</p>`}</div></div>`;
+      if (view === "users") element.innerHTML = `<div class="panel"><div class="section-head"><div><h3>Personnes inscrites</h3><p>La confirmation envoie automatiquement le code secret par email.</p></div></div><div style="overflow:auto"><table class="admin-table"><thead><tr><th>Nom</th><th>Compte</th><th>Recherche</th><th>État</th><th>Action</th></tr></thead><tbody>${state.users.map((user) => `<tr><td><strong>${esc(user.firstName + " " + user.lastName)}</strong><br><small class="hint">${esc(user.email)}</small></td><td>${esc(user.accountType === "plan_business" ? "Business" : "Rencontre")}</td><td>${esc(user.encounterType)}</td><td class="${user.status === "pending" ? "status-pending" : "status-active"}">${user.status === "pending" ? "En attente" : "Confirmé"}</td><td>${user.status === "pending" ? `<button class="btn btn-primary btn-small" onclick="approveUser(${user.id})">Confirmer</button>` : `<span class="hint">Email envoyé</span>`}</td></tr>`).join("")}</tbody></table></div></div>`;
+      document.getElementById("announcementForm")?.addEventListener("submit", createAnnouncement);
+    }
+    async function approveUser(id) {
+      try { await progressAction("Confirmation du profil", () => api(`/api/admin/users/${id}/approve`, { method:"POST" })); toast("Profil confirmé et email envoyé.", true); await loadAdmin(); adminView("users"); } catch (error) { toast(error.message); }
+    }
+    function replyForm(id) {
+      const target = document.getElementById(`reply-${id}`);
+      target.innerHTML = `<form onsubmit="sendAdminReply(event,${id})" style="margin-top:13px"><textarea name="body" placeholder="Votre réponse…" required style="width:100%;border:1px solid var(--line);border-radius:11px;padding:10px"></textarea><div class="candidate-grid">${state.users.map((user) => `<label class="check"><input type="checkbox" name="selectedUserIds" value="${user.id}">${esc(user.firstName + " " + user.lastName)}</label>`).join("")}</div><button class="btn btn-primary btn-small" style="margin-top:10px">Envoyer la sélection</button></form>`;
+    }
+    async function sendAdminReply(event, id) {
+      event.preventDefault();
+      const form = new FormData(event.target);
+      try { await api(`/api/admin/messages/${id}/reply`, { method:"POST", body:JSON.stringify({ body:form.get("body"), selectedUserIds:form.getAll("selectedUserIds").map(Number) }) }); toast("Réponse envoyée.", true); await loadAdmin(); adminView("inbox"); } catch (error) { toast(error.message); }
+    }
+    async function createAnnouncement(event) {
+      event.preventDefault();
+      const form = new FormData(event.target);
+      try { await api("/api/admin/announcements", { method:"POST", body:JSON.stringify({ title:form.get("title"), body:form.get("body") }) }); toast("Annonce publiée.", true); await loadAdmin(); adminView("dashboard"); } catch (error) { toast(error.message); }
+    }
+    async function logout() {
+      await api("/api/auth/logout", { method:"POST" });
+      state.user = null; state.role = null; go("");
+    }
+    async function home() {
+      root.innerHTML = `<div class="page"><div class="wrap"><nav class="nav"><a class="brand" href="#" onclick="go('')"><span class="brand-mark">♡</span><span>Cœur & Connexions</span></a><div class="nav-actions"><a class="btn btn-light" href="#" onclick="go('connexion')">Se connecter</a><a class="btn btn-primary" href="#" onclick="go('inscription')">Créer mon espace <span>→</span></a></div></nav><section class="hero"><div><span class="kicker">Une rencontre plus humaine</span><h1>Les belles histoires commencent <em>en douceur.</em></h1><p class="lead">Un espace privé pour faire connaissance avec plus d’intention, de discrétion et de sérénité. Ici, pas de défilement sans fin : seulement des liens choisis.</p><div class="hero-actions"><a class="btn btn-primary" href="#" onclick="go('inscription')">Commencer mon histoire <span>→</span></a><a class="btn btn-light" href="#methode">Découvrir notre approche</a></div><div class="trust-line"><div class="trust-icons"><span>♡</span><span>✦</span><span>↗</span></div> Un parcours accompagné, à votre rythme</div></div><div class="hero-art"><div class="art-orbit"></div><div class="art-card"></div><div class="floating float-note"><strong>100% confidentiel</strong><small>Votre espace reste privé</small></div><div class="floating float-heart"><strong>Une vraie intention.</strong><small>Pas un simple swipe.</small></div><div class="art-caption">Discret · sincère · humain</div></div></section><section id="methode" class="section"><div class="section-head"><div><span class="kicker">Notre façon de faire</span><h2>Un chemin pensé pour votre tranquillité.</h2></div><p>Vous gardez le contrôle à chaque étape. L’équipe vous accompagne sans exposer votre profil publiquement.</p></div><div class="feature-grid"><div class="feature"><div class="feature-number">01</div><h3>Vous vous présentez</h3><p>Créez votre espace et partagez vos intentions. Votre demande est examinée par une vraie équipe.</p></div><div class="feature"><div class="feature-number">02</div><h3>Nous écoutons</h3><p>Échangez avec l’équipe dans un espace privé. Vos informations ne sont pas affichées publiquement.</p></div><div class="feature"><div class="feature-number">03</div><h3>Vous choisissez</h3><p>Recevez une sélection et gardez le dernier mot avant toute mise en relation.</p></div></div></section><section class="section" style="padding-top:0"><div class="quote-section"><div><span class="kicker" style="color:#ffabc1">Votre prochaine page</span><h2>Une rencontre, sans bruit autour.</h2><p>Créez votre espace en quelques minutes et laissez la conversation commencer.</p></div><a class="btn btn-pink" href="#" onclick="go('inscription')">Créer mon espace <span>→</span></a></div></section><footer class="footer"><span>© 2026 Cœur & Connexions</span><span>Votre vie privée reste au centre.</span></footer></div></div>`;
+    }
+    async function render() {
+      const route = location.hash.replace("#", "");
+      if (!route) return home();
+      if (route === "connexion") return login();
+      if (route === "inscription") return register();
+      if (route === "admin" || route === "espace") {
+        try {
+          if (!state.user) {
+            const me = await api("/api/me");
+            state.user = me; state.role = route === "admin" ? "admin" : "user";
+          }
+          if (route === "admin" || state.role === "admin") { await loadAdmin(); return adminSpace(); }
+          await loadUser(); return userSpace();
+        } catch (_error) { return go("connexion"); }
+      }
+      return go("");
+    }
+    window.addEventListener("hashchange", render);
+    window.addEventListener("DOMContentLoaded", () => { bootLoader(); render(); });
+  </script>
+</body>
+</html>

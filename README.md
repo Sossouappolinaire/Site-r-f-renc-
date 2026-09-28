@@ -1,0 +1,44 @@
+# Cœur & Connexions
+
+Version modernisée du site de rencontre avec :
+
+- configuration centralisée dans `config.js` ;
+- interface responsive `index.html` avec barre de chargement colorée au démarrage ;
+- animation de progression pendant une inscription ou un enregistrement ;
+- écran de succès visible 3 secondes après l’inscription ;
+- validation manuelle par l’administrateur ;
+- email de confirmation contenant un code secret personnel à 6 chiffres ;
+- vérification du code lors de la première connexion ;
+- code haché, unique et à usage unique ;
+- espace utilisateur, messages, photos privées et espace administrateur.
+
+## Déploiement Render
+
+1. Décompresser l’archive et envoyer le dossier dans un dépôt GitHub.
+2. Dans Render, créer un **Web Service** relié au dépôt.
+3. Utiliser `npm install` comme commande de build et `npm start` comme commande de démarrage.
+4. Configurer les variables suivantes :
+
+   - `ADMIN_EMAIL` : email qui reçoit les nouvelles inscriptions ;
+   - `ADMIN_PASSWORD` : mot de passe privé de l’administrateur ;
+   - `SESSION_SECRET` : longue valeur aléatoire ;
+   - `RESEND_API_KEY` : clé API Resend pour envoyer les emails ;
+   - `EMAIL_FROM` : expéditeur validé par Resend, par exemple `Cœur & Connexions <noreply@votredomaine.com>`.
+
+Sans `RESEND_API_KEY`, le serveur fonctionne en test mais écrit les emails dans les logs au lieu de les envoyer. Pour un vrai site, cette variable est indispensable.
+
+`config.js` récupère automatiquement ces valeurs depuis `process.env` après le déploiement. Il ne faut pas remplacer les valeurs vides par une clé API, un mot de passe ou une valeur secrète dans ce fichier.
+
+`EMAIL_FROM` est l’adresse affichée comme expéditeur des emails. Avec Resend, le domaine utilisé doit être vérifié pour la production. `onboarding@resend.dev` peut servir pour un premier test selon les restrictions du compte Resend.
+
+`SESSION_SECRET` est une longue valeur aléatoire qui signe les sessions. Dans `render.yaml`, Render la génère automatiquement avec `generateValue: true`; il ne faut pas l’inventer ni la publier.
+
+## Important pour les données
+
+Le fichier `data.json` est créé automatiquement. Le stockage local d’un hébergeur gratuit peut être effacé lors d’un redémarrage ou d’un nouveau déploiement. Pour conserver les comptes et photos en production, utilisez un disque persistant ou remplacez `data.json` par PostgreSQL et un stockage d’objets.
+
+## Peut-on le déployer partout ?
+
+`index.html` peut être servi par presque n’importe quel hébergeur statique, mais l’inscription, l’administrateur, la validation, les sessions et les emails nécessitent le serveur Node.js. L’application complète doit donc être déployée sur un hébergeur qui accepte Node.js, comme Render, Railway, Fly.io, un VPS ou Replit Deployments. Un hébergement HTML statique seul ne suffit pas.
+
+Les conditions affichées et envoyées par email sont une base produit, pas un avis juridique. Faites-les relire et adapter aux règles de votre pays avant ouverture publique.
