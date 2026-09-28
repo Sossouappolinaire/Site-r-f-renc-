@@ -20,6 +20,19 @@
     .diagnostic-box{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:13px;background:#fbf8fa;text-align:left;font-size:12px}.diagnostic-row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line)}.diagnostic-row:last-of-type{border-bottom:0}.diagnostic-row b{font-size:11px}.diagnostic-row .ready{color:#277458}.diagnostic-row .missing{color:#b23c5d}.diagnostic-box small{display:block;color:var(--muted);margin-top:10px}
     @media(max-width:900px){.hero{grid-template-columns:1fr;padding-top:30px}.hero-art{height:430px;max-width:570px;width:100%;margin:auto}.feature-grid{grid-template-columns:1fr 1fr}.content-grid{grid-template-columns:1fr}.workspace-grid{grid-template-columns:1fr}.side{position:static;display:flex;overflow:auto;gap:4px}.side-title{display:none}.side-btn{white-space:nowrap;width:auto}.auth-page{grid-template-columns:1fr}.auth-visual{display:none}}
     @media(max-width:590px){.wrap{width:calc(100% - 24px)}.nav{flex-wrap:wrap;gap:14px}.nav-actions{width:100%}.nav-actions .btn{flex:1;padding:10px 11px;font-size:12px}.nav-actions .btn-light{display:inline-flex}.hero h1{font-size:54px}.hero-art{height:350px}.art-card{inset:35px 35px 20px 57px}.float-note{right:0}.section{padding:55px 0}.section-head{display:block}.section-head>p{margin-top:16px}.feature-grid,.dashboard-grid{grid-template-columns:1fr}.quote-section{padding:30px 24px;display:block}.quote-section .btn{margin-top:18px}.footer{display:block}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.auth-main{padding:20px 12px}.auth-card{padding:23px}.form-footer{align-items:stretch;flex-direction:column}.form-footer .btn{width:100%}.welcome{align-items:flex-start;flex-direction:column}.panel{padding:18px}.admin-table{display:block;overflow:auto}.candidate-grid{grid-template-columns:1fr}}
+    .verify-wrap{min-height:100vh;display:grid;place-items:center;padding:28px 18px;background:radial-gradient(circle at 20% 0,#f4ecff 0,transparent 45%),radial-gradient(circle at 90% 100%,#e6fbf2 0,transparent 45%),var(--cream)}
+    .verify-card{width:min(100%,430px);background:#fff;border:1px solid var(--line);border-radius:26px;padding:40px 30px;text-align:center;box-shadow:var(--shadow);animation:verifyIn .45s ease both}
+    .verify-halo{width:126px;height:126px;margin:4px auto 22px;border-radius:32px;display:grid;place-items:center;background:linear-gradient(160deg,#f2f7ff,#eef6ff)}
+    .verify-burst{position:relative;width:78px;height:78px;display:grid;place-items:center}
+    .verify-burst i{position:absolute;top:50%;left:50%;width:5px;height:12px;margin:-6px 0 0 -2.5px;border-radius:4px;background:#33c481;opacity:.85;animation:verifyPop .6s ease both}
+    .verify-check{width:62px;height:62px;border-radius:50%;background:#2ec06f;display:grid;place-items:center;color:#fff;font-size:30px;font-weight:800;box-shadow:0 10px 24px #2ec06f4d;position:relative;z-index:1}
+    .verify-card h2{font:700 24px/1.2 "DM Sans",system-ui,sans-serif;color:var(--ink);margin:0 0 8px;letter-spacing:-.02em}
+    .verify-card p.verify-sub{color:var(--muted);font-size:14px;margin:0 0 26px}
+    .verify-seal{width:88px;height:88px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(150deg,#4ddc9a,#1f9f66);color:#fff;font-size:38px;box-shadow:0 16px 34px #2ec06f3d}
+    .verify-secure{display:inline-flex;gap:8px;align-items:center;color:#22935f;font-size:13px;font-weight:600}
+    .verify-card .btn{width:100%;margin-top:24px}
+    @keyframes verifyIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+    @keyframes verifyPop{0%{opacity:0;transform:rotate(var(--a)) translateY(-22px) scale(.4)}100%{opacity:.9;transform:rotate(var(--a)) translateY(-40px) scale(1)}}
   </style>
 </head>
 <body>
@@ -128,14 +141,24 @@
         const form = new FormData(event.target);
         try {
           const result = await api("/api/auth/verify-code", { method:"POST", body:JSON.stringify({ code:form.get("code") }) });
-          state.user = result.user; state.role = "user"; go("espace");
+          state.user = result.user; state.role = "user"; codeVerified();
         } catch (error) {
           document.getElementById("codeError").innerHTML = `<div class="alert">${esc(error.message)}</div>`;
         }
       };
     }
+    function codeVerified() {
+      const rays = Array.from({ length: 10 }, (_, index) => `<i style="--a:${index * 36}deg;transform:rotate(${index * 36}deg) translateY(-40px);animation-delay:${index * 0.03}s"></i>`).join("");
+      root.innerHTML = `<div class="verify-wrap"><div class="verify-card"><div class="verify-halo"><div class="verify-burst">${rays}<div class="verify-check">✓</div></div></div><h2>Code vérifié</h2><p class="verify-sub">Votre code a bien été validé.</p><div class="verify-seal">✓</div><span class="verify-secure">🔒 Vérifié et sécurisé</span><button class="btn btn-primary" onclick="go('espace')">Ouvrir mon espace <span>→</span></button></div></div>`;
+      setTimeout(() => { if (document.querySelector(".verify-card")) go("espace"); }, 2400);
+    }
     async function resendCode() {
-      try { await api("/api/auth/resend-code", { method:"POST" }); toast("Un nouveau code vient d’être envoyé.", true); }
+      try {
+        const result = await api("/api/auth/resend-code", { method:"POST" });
+        if (result.delivery === "admin_relay") toast("Code généré : il a été transmis à l’administrateur, qui vous le communiquera.", true);
+        else if (result.delivery === "console") toast("Code généré. L’envoi email n’est pas encore actif : demandez-le à l’administrateur.", true);
+        else toast("Un nouveau code vient d’être envoyé.", true);
+      }
       catch (error) { toast(error.message); }
     }
     function register() {

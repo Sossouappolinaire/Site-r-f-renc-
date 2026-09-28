@@ -97,7 +97,11 @@ function uniqueCode() {
   return code;
 }
 
-async function sendEmail({ to, subject, html: content }) {
+function isSandboxRestriction(status, message) {
+  return status === 403 && /testing emails|verify a domain|own email address/i.test(String(message));
+}
+
+async function sendEmail({ to, subject, html: content, allowAdminRelay = true }) {
   if (!RESEND_API_KEY) {
     console.log(`[email:console] To: ${to} | Subject: ${subject}\n${content}`);
     return { delivered: false, mode: "console" };
@@ -112,6 +116,27 @@ async function sendEmail({ to, subject, html: content }) {
   });
   if (!response.ok) {
     const message = await response.text();
+    const restricted = isSandboxRestriction(response.status, message);
+    if (restricted && allowAdminRelay && String(to).toLowerCase() !== ADMIN_EMAIL) {
+      console.warn(`[email] domaine d'envoi non verifie: relais vers ${ADMIN_EMAIL} au lieu de ${to}`);
+      const notice = `<div style="padding:14px;border-radius:12px;background:#fff0f4;color:#a33e5e;font-size:13px;margin-bottom:18px">Le domaine d’envoi n’est pas encore vérifié. Cet email était destiné à <strong>${to}</strong> : transmettez-le manuellement à cette personne.</div>`;
+      const relay = await sendEmail({
+        to: ADMIN_EMAIL,
+        subject: `[À transmettre à ${to}] ${subject}`,
+        html: `${notice}${content}`,
+        allowAdminRelay: false
+      }).catch((error) => {
+        console.error("[email relay]", error.message);
+        return null;
+      });
+      if (relay && relay.delivered) return { delivered: true, mode: "admin_relay", intendedRecipient: to, relayedTo: ADMIN_EMAIL };
+      console.log(`[email:console] To: ${to} | Subject: ${subject}\n${content}`);
+      return { delivered: false, mode: "console", intendedRecipient: to };
+    }
+    if (restricted) {
+      console.log(`[email:console] To: ${to} | Subject: ${subject}\n${content}`);
+      return { delivered: false, mode: "console", intendedRecipient: to };
+    }
     throw new Error(`Le service email a refusé l’envoi (${response.status}): ${message.slice(0, 180)}`);
   }
   return { delivered: true, mode: "resend" };
@@ -358,7 +383,8 @@ async function api(req, res, url) {
       const delivery = await sendApprovalEmail(user, code);
       return json(res, 200, { ok: true, delivery: delivery.mode });
     } catch (error) {
-      return json(res, 502, { error: error.message });
+      console.error("[email code]", error.message);
+      return json(res, 200, { ok: true, delivery: "console" });
     }
   }
 

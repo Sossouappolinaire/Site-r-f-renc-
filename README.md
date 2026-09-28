@@ -42,3 +42,6 @@ Le fichier `data.json` est créé automatiquement. Le stockage local d’un héb
 `index.html` peut être servi par presque n’importe quel hébergeur statique, mais l’inscription, l’administrateur, la validation, les sessions et les emails nécessitent le serveur Node.js. L’application complète doit donc être déployée sur un hébergeur qui accepte Node.js, comme Render, Railway, Fly.io, un VPS ou Replit Deployments. Un hébergement HTML statique seul ne suffit pas.
 
 Les conditions affichées et envoyées par email sont une base produit, pas un avis juridique. Faites-les relire et adapter aux règles de votre pays avant ouverture publique.
+## Envoi des emails
+
+Tant que le domaine expediteur nest pas verifie chez le fournisseur email, les emails destines aux membres sont automatiquement transmis a ADMIN_EMAIL (sujet prefixe "A transmettre a ..."), au lieu de bloquer la connexion. Une fois le domaine verifie et EMAIL_FROM mis a jour, les envois partent directement aux membres.
