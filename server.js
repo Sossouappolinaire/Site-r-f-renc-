@@ -298,9 +298,15 @@ async function api(req, res, url) {
   if (method === "POST" && pathname === "/api/auth/login") {
     const input = await body(req);
     const email = String(input.email || "").trim().toLowerCase();
-    if (email === ADMIN_EMAIL && ADMIN_PASSWORD && String(input.password || "") === ADMIN_PASSWORD) {
+    if (email === ADMIN_EMAIL && !ADMIN_PASSWORD) {
+      return json(res, 503, { code: "ADMIN_NOT_CONFIGURED", error: "Le compte administrateur est détecté, mais ADMIN_PASSWORD n’est pas chargé sur le serveur Render." });
+    }
+    if (email === ADMIN_EMAIL && String(input.password || "") === ADMIN_PASSWORD) {
       setSession(res, { role: "admin", id: 0 });
       return json(res, 200, { role: "admin", user: { firstName: "Équipe", lastName: "Cœur", email: ADMIN_EMAIL, status: "active", accountType: "admin", photoCount: 0 } });
+    }
+    if (email === ADMIN_EMAIL) {
+      return json(res, 401, { code: "ADMIN_PASSWORD_INVALID", error: "Le mot de passe administrateur ne correspond pas à ADMIN_PASSWORD." });
     }
     const user = data.users.find((candidate) => candidate.email === email);
     if (!user || !verifyPassword(String(input.password || ""), user.passwordHash)) return json(res, 401, { error: "Identifiants invalides." });
