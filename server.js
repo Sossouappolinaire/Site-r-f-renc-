@@ -3,14 +3,13 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const { URL } = require("url");
+const XLSX = require("xlsx");
 const config = require("./config");
 
 const PORT = config.port;
 const ADMIN_EMAIL = config.adminEmail;
 const ADMIN_PASSWORD = config.adminPassword;
 const SESSION_SECRET = config.sessionSecret;
-const EMAIL_FROM = config.emailFrom;
-const RESEND_API_KEY = config.resendApiKey;
 const DATA_FILE = path.join(__dirname, "data.json");
 const INDEX_FILE = path.join(__dirname, "index.html");
 const sessions = new Map();
@@ -20,8 +19,10 @@ const seed = {
   nextMessageId: 1,
   nextAnnouncementId: 2,
   nextMatchId: 1,
+  nextEmailLogId: 1,
   users: [],
   messages: [],
+  emailLogs: [],
   usedLoginCodeHashes: [],
   announcements: [{
     id: 1,
@@ -46,6 +47,8 @@ function writeData(value) {
 }
 
 let data = readData();
+data.emailLogs = Array.isArray(data.emailLogs) ? data.emailLogs : [];
+data.nextEmailLogId = Number(data.nextEmailLogId || 1);
 
 function json(res, status, payload) {
   const body = JSON.stringify(payload);
@@ -83,6 +86,25 @@ function codeHash(code) {
   return crypto.createHmac("sha256", SESSION_SECRET).update(String(code)).digest("hex");
 }
 
+function protectCode(code) {
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv("aes-256-gcm", crypto.createHash("sha256").update(SESSION_SECRET).digest(), iv);
+  const encrypted = Buffer.concat([cipher.update(String(code), "utf8"), cipher.final()]);
+  return `${iv.toString("hex")}:${cipher.getAuthTag().toString("hex")}:${encrypted.toString("hex")}`;
+}
+
+function revealCode(value) {
+  const [ivHex, tagHex, encryptedHex] = String(value || "").split(":");
+  if (!ivHex || !tagHex || !encryptedHex) return null;
+  try {
+    const decipher = crypto.createDecipheriv("aes-256-gcm", crypto.createHash("sha256").update(SESSION_SECRET).digest(), Buffer.from(ivHex, "hex"));
+    decipher.setAuthTag(Buffer.from(tagHex, "hex"));
+    return Buffer.concat([decipher.update(Buffer.from(encryptedHex, "hex")), decipher.final()]).toString("utf8");
+  } catch (_error) {
+    return null;
+  }
+}
+
 function sameSecret(a, b) {
   const left = Buffer.from(String(a || ""));
   const right = Buffer.from(String(b || ""));
@@ -97,77 +119,153 @@ function uniqueCode() {
   return code;
 }
 
-function isSandboxRestriction(status, message) {
-  return status === 403 && /testing emails|verify a domain|own email address/i.test(String(message));
-}
-
-async function sendEmail({ to, subject, html: content, allowAdminRelay = true }) {
-  if (!RESEND_API_KEY) {
-    console.log(`[email:console] To: ${to} | Subject: ${subject}\n${content}`);
-    return { delivered: false, mode: "console" };
-  }
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${RESEND_API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ from: EMAIL_FROM, to: [to], subject, html: content })
-  });
-  if (!response.ok) {
-    const message = await response.text();
-    const restricted = isSandboxRestriction(response.status, message);
-    if (restricted && allowAdminRelay && String(to).toLowerCase() !== ADMIN_EMAIL) {
-      console.warn(`[email] domaine d'envoi non verifie: relais vers ${ADMIN_EMAIL} au lieu de ${to}`);
-      const notice = `<div style="padding:14px;border-radius:12px;background:#fff0f4;color:#a33e5e;font-size:13px;margin-bottom:18px">Le domaine d’envoi n’est pas encore vérifié. Cet email était destiné à <strong>${to}</strong> : transmettez-le manuellement à cette personne.</div>`;
-      const relay = await sendEmail({
-        to: ADMIN_EMAIL,
-        subject: `[À transmettre à ${to}] ${subject}`,
-        html: `${notice}${content}`,
-        allowAdminRelay: false
-      }).catch((error) => {
-        console.error("[email relay]", error.message);
-        return null;
-      });
-      if (relay && relay.delivered) return { delivered: true, mode: "admin_relay", intendedRecipient: to, relayedTo: ADMIN_EMAIL };
-      console.log(`[email:console] To: ${to} | Subject: ${subject}\n${content}`);
-      return { delivered: false, mode: "console", intendedRecipient: to };
-    }
-    if (restricted) {
-      console.log(`[email:console] To: ${to} | Subject: ${subject}\n${content}`);
-      return { delivered: false, mode: "console", intendedRecipient: to };
-    }
-    throw new Error(`Le service email a refusé l’envoi (${response.status}): ${message.slice(0, 180)}`);
-  }
-  return { delivered: true, mode: "resend" };
-}
-
-function emailLayout(title, content) {
-  return `<!doctype html><html lang="fr"><body style="margin:0;background:#f7f0f4;color:#271c32;font-family:Arial,sans-serif;padding:32px">
-    <div style="max-width:620px;margin:auto;background:#fff;border-radius:24px;padding:36px;box-shadow:0 12px 40px #44234216">
-      <div style="font-size:20px;font-weight:800;color:#542c58">♡ Cœur & Connexions</div>
-      <h1 style="font-family:Georgia,serif;font-weight:500;font-size:34px;color:#542c58">${title}</h1>
-      ${content}
-      <hr style="border:0;border-top:1px solid #eadde4;margin:28px 0">
-      <p style="font-size:12px;line-height:1.6;color:#86768b">Cœur & Connexions facilite la prise de contact mais ne garantit ni l’identité, ni les intentions, ni le comportement des utilisateurs. Chaque personne reste responsable de ses échanges et de ses décisions. L’administrateur n’est pas partie aux relations, conversations ou engagements entre utilisateurs. En cas de problème, utilisez le signalement depuis votre espace et contactez les autorités compétentes si nécessaire.</p>
-    </div>
-  </body></html>`;
-}
-
-function sendAdminNewRegistration(user) {
-  return sendEmail({
-    to: ADMIN_EMAIL,
-    subject: `Nouvelle inscription à examiner — ${user.firstName} ${user.lastName}`,
-    html: emailLayout("Une nouvelle demande vous attend", `<p>${user.firstName} ${user.lastName} vient de créer un espace avec l’adresse <strong>${user.email}</strong>.</p><p>Connectez-vous à l’espace administrateur pour examiner le profil et confirmer ou refuser la demande.</p>`)
-  });
-}
-
-function sendApprovalEmail(user, code) {
-  return sendEmail({
+function approvalEmail(user, code) {
+  const subject = "Votre espace Cœur & Connexions est confirmé";
+  const body = [
+    "♡ Cœur & Connexions",
+    "",
+    "Votre demande est confirmée",
+    "",
+    `Bonjour ${user.firstName},`,
+    "",
+    "Votre espace est maintenant confirmé par l’équipe. Lors de votre première connexion, saisissez le code secret ci-dessous :",
+    "",
+    code,
+    "Ce code est personnel, à usage unique et valable 30 jours. Ne le partagez avec personne.",
+    "",
+    "En continuant, vous confirmez accepter les conditions de discrétion, de respect et de responsabilité présentées lors de votre inscription.",
+    "",
+    "Cœur & Connexions facilite la prise de contact mais ne garantit ni l’identité, ni les intentions, ni le comportement des utilisateurs. Chaque personne reste responsable de ses échanges et de ses décisions. L’administrateur n’est pas partie aux relations, conversations ou engagements entre utilisateurs. En cas de problème, utilisez le signalement depuis votre espace et contactez les autorités compétentes si nécessaire."
+  ].join("\n");
+  return {
     to: user.email,
-    subject: "Votre espace Cœur & Connexions est confirmé",
-    html: emailLayout("Votre demande est confirmée", `<p>Bonjour ${user.firstName},</p><p>Votre espace est maintenant confirmé par l’équipe. Lors de votre première connexion, saisissez le code secret ci-dessous :</p><div style="margin:26px 0;padding:18px;text-align:center;background:#fff0f4;border-radius:16px;color:#542c58;font-size:36px;font-weight:800;letter-spacing:9px">${code}</div><p>Ce code est personnel, à usage unique et valable 30 jours. Ne le partagez avec personne.</p><p>En continuant, vous confirmez accepter les conditions de discrétion, de respect et de responsabilité présentées lors de votre inscription.</p>`)
-  });
+    subject,
+    body,
+    gmailUrl: `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(user.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  };
+}
+
+function createEmailLog(email, status = "draft", failureReason = null) {
+  const log = {
+    id: data.nextEmailLogId++,
+    provider: "Gmail manuel",
+    recipient: email.to,
+    subject: email.subject,
+    status,
+    failureReason,
+    createdAt: new Date().toISOString()
+  };
+  data.emailLogs.unshift(log);
+  writeData(data);
+  return log;
+}
+
+const userExportColumns = [
+  "id", "firstName", "lastName", "phone", "email", "gender",
+  "accountType", "encounterType", "planType", "profilePhoto",
+  "introductionVideo", "photos", "status", "firstLoginVerified",
+  "termsAcceptedAt", "createdAt", "approvedAt"
+];
+
+function exportableUser(user) {
+  return {
+    id: user.id,
+    firstName: user.firstName || "",
+    lastName: user.lastName || "",
+    phone: user.phone || "",
+    email: user.email || "",
+    gender: user.gender || "",
+    accountType: user.accountType || "",
+    encounterType: user.encounterType || "",
+    planType: user.planType || "",
+    profilePhoto: user.profilePhoto || "",
+    introductionVideo: user.introductionVideo || "",
+    photos: JSON.stringify(user.photos || []),
+    status: user.status || "pending",
+    firstLoginVerified: Boolean(user.firstLoginVerified),
+    termsAcceptedAt: user.termsAcceptedAt || "",
+    createdAt: user.createdAt || "",
+    approvedAt: user.approvedAt || ""
+  };
+}
+
+function workbookFromUsers(users) {
+  const sheet = XLSX.utils.json_to_sheet(users.map(exportableUser), { header: userExportColumns });
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, sheet, "Utilisateurs");
+  return workbook;
+}
+
+function workbookRowsFromBase64(dataBase64) {
+  const raw = String(dataBase64 || "").replace(/^data:.*?;base64,/, "");
+  if (!raw) throw new Error("Fichier Excel vide.");
+  const workbook = XLSX.read(Buffer.from(raw, "base64"), { type: "buffer", cellDates: false });
+  const sheetName = workbook.SheetNames[0];
+  if (!sheetName) throw new Error("Aucune feuille Excel trouvée.");
+  const sheet = workbook.Sheets[sheetName];
+  const rows = XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false });
+  if (!rows.length) throw new Error("Le fichier Excel ne contient aucune ligne.");
+  return rows;
+}
+
+function importValue(row, names) {
+  const key = names.find((name) => Object.prototype.hasOwnProperty.call(row, name));
+  return key ? row[key] : "";
+}
+
+function importPhotos(value) {
+  if (Array.isArray(value)) return value;
+  if (!String(value || "").trim()) return [];
+  try {
+    const parsed = JSON.parse(String(value));
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (_error) {
+    return [];
+  }
+}
+
+function mergeImportedUser(row, existing) {
+  const isNew = !existing;
+  const email = String(importValue(row, ["email", "Email", "EMAIL"])).trim().toLowerCase();
+  const firstName = String(importValue(row, ["firstName", "Prénom", "prenom"])).trim();
+  const lastName = String(importValue(row, ["lastName", "Nom", "nom"])).trim();
+  if (!email || !firstName || !lastName) return { error: "Chaque ligne doit contenir un prénom, un nom et un email." };
+  const target = existing || {
+    id: data.nextUserId++,
+    passwordHash: hashPassword(crypto.randomBytes(24).toString("hex")),
+    loginCodeHash: null,
+    loginCodeExpiresAt: null,
+    pendingLoginCode: null,
+    firstLoginVerified: false,
+    termsAcceptedAt: new Date().toISOString(),
+    createdAt: new Date().toISOString()
+  };
+  target.firstName = firstName;
+  target.lastName = lastName;
+  target.phone = String(importValue(row, ["phone", "Téléphone", "telephone"])).trim();
+  target.email = email;
+  target.gender = String(importValue(row, ["gender", "Genre", "genre"]) || "autre");
+  target.accountType = String(importValue(row, ["accountType", "Type de compte"]) || "rencontre");
+  target.encounterType = String(importValue(row, ["encounterType", "Recherche", "recherche"]) || "tous");
+  target.planType = String(importValue(row, ["planType", "Formule", "formule"]) || "rencontre_simple");
+  target.profilePhoto = String(importValue(row, ["profilePhoto", "Photo de profil"]) || "") || null;
+  target.introductionVideo = String(importValue(row, ["introductionVideo", "Vidéo"]) || "") || null;
+  target.photos = importPhotos(importValue(row, ["photos", "Photos"])) ;
+  if (!target.profilePhoto && target.photos[0]) target.profilePhoto = target.photos[0];
+  const status = String(importValue(row, ["status", "Statut", "statut"]) || target.status || "pending").toLowerCase();
+  target.status = isNew ? "pending" : (["pending", "active"].includes(status) ? status : "pending");
+  target.firstLoginVerified = ["true", "1", "oui", "yes"].includes(String(importValue(row, ["firstLoginVerified", "Première connexion vérifiée"])).toLowerCase());
+  target.termsAcceptedAt = String(importValue(row, ["termsAcceptedAt", "Conditions acceptées"]) || target.termsAcceptedAt);
+  target.createdAt = String(importValue(row, ["createdAt", "Date de création"]) || target.createdAt);
+  target.approvedAt = String(importValue(row, ["approvedAt", "Date de confirmation"]) || "") || null;
+  if (isNew) {
+    target.firstLoginVerified = false;
+    target.approvedAt = null;
+    target.loginCodeHash = null;
+    target.loginCodeExpiresAt = null;
+    target.pendingLoginCode = null;
+  }
+  return { user: target, created: !existing };
 }
 
 function parseCookies(req) {
@@ -278,9 +376,7 @@ async function api(req, res, url) {
       config: {
         adminEmailConfigured: Boolean(ADMIN_EMAIL),
         adminPasswordConfigured: Boolean(ADMIN_PASSWORD),
-        resendApiKeyConfigured: Boolean(RESEND_API_KEY),
         sessionSecretConfigured: Boolean(SESSION_SECRET && SESSION_SECRET !== "change-me-before-production"),
-        emailFrom: EMAIL_FROM
       }
     });
   }
@@ -293,6 +389,7 @@ async function api(req, res, url) {
     }
     if (String(input.password).length < 8) return json(res, 400, { error: "Le mot de passe doit contenir au moins 8 caractères." });
     if (data.users.some((user) => user.email === email)) return json(res, 409, { error: "Un compte existe déjà avec cet email." });
+    const registrationCode = uniqueCode();
     const user = {
       id: data.nextUserId++,
       firstName: String(input.firstName).trim(),
@@ -309,14 +406,14 @@ async function api(req, res, url) {
       photos: input.profilePhoto ? [input.profilePhoto] : [],
       status: "pending",
       firstLoginVerified: false,
-      loginCodeHash: null,
+      loginCodeHash: codeHash(registrationCode),
       loginCodeExpiresAt: null,
+      pendingLoginCode: protectCode(registrationCode),
       termsAcceptedAt: new Date().toISOString(),
       createdAt: new Date().toISOString()
     };
     data.users.push(user);
     writeData(data);
-    sendAdminNewRegistration(user).catch((error) => console.error("[email admin]", error.message));
     return json(res, 201, { user: publicUser(user), pendingApproval: true });
   }
 
@@ -342,7 +439,6 @@ async function api(req, res, url) {
         user.loginCodeHash = codeHash(code);
         user.loginCodeExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
         writeData(data);
-        sendApprovalEmail(user, code).catch((error) => console.error("[email code]", error.message));
       }
       setSession(res, { role: "pending_2fa", id: user.id });
       return json(res, 200, { role: "user_pending", requiresCode: true, user: publicUser(user) });
@@ -368,24 +464,6 @@ async function api(req, res, url) {
     const token = parseCookies(req).cc_session;
     if (token) sessions.set(token, { role: "user", id: user.id });
     return json(res, 200, { role: "user", user: publicUser(user) });
-  }
-
-  if (method === "POST" && pathname === "/api/auth/resend-code") {
-    const current = session(req);
-    if (!current || !["pending_2fa", "user"].includes(current.role)) return json(res, 401, { error: "Session de connexion absente." });
-    const user = data.users.find((candidate) => candidate.id === current.id);
-    if (!user) return json(res, 404, { error: "Compte introuvable." });
-    const code = uniqueCode();
-    user.loginCodeHash = codeHash(code);
-    user.loginCodeExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-    writeData(data);
-    try {
-      const delivery = await sendApprovalEmail(user, code);
-      return json(res, 200, { ok: true, delivery: delivery.mode });
-    } catch (error) {
-      console.error("[email code]", error.message);
-      return json(res, 200, { ok: true, delivery: "console" });
-    }
   }
 
   if (method === "POST" && pathname === "/api/auth/logout") {
@@ -465,15 +543,82 @@ async function api(req, res, url) {
     user.status = "active";
     user.approvedAt = new Date().toISOString();
     user.firstLoginVerified = false;
-    const code = uniqueCode();
+    const code = revealCode(user.pendingLoginCode) || uniqueCode();
     user.loginCodeHash = codeHash(code);
     user.loginCodeExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    user.pendingLoginCode = null;
     writeData(data);
+    const email = approvalEmail(user, code);
+    const emailLog = createEmailLog(email);
+    return json(res, 200, { user: publicUser(user), email, emailLog });
+  }
+
+  if (method === "GET" && pathname === "/api/admin/email-logs") {
+    if (!adminRequired(req, res)) return;
+    return json(res, 200, data.emailLogs);
+  }
+
+  if (method === "GET" && pathname === "/api/admin/users/export") {
+    if (!adminRequired(req, res)) return;
+    const workbook = workbookFromUsers(data.users);
+    const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+    res.writeHead(200, {
+      "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "Content-Disposition": 'attachment; filename="coeur-connexions-utilisateurs.xlsx"',
+      "Content-Length": buffer.length,
+      "Cache-Control": "no-store"
+    });
+    return res.end(buffer);
+  }
+
+  if (method === "POST" && pathname === "/api/admin/users/import-preview") {
+    if (!adminRequired(req, res)) return;
     try {
-      const delivery = await sendApprovalEmail(user, code);
-      return json(res, 200, { user: publicUser(user), delivery: delivery.mode });
+      const input = await body(req);
+      const rows = workbookRowsFromBase64(input.dataBase64);
+      return json(res, 200, {
+        fileName: String(input.fileName || "import.xlsx"),
+        rowCount: rows.length,
+        columns: Object.keys(rows[0] || {}),
+        sample: rows.slice(0, 3).map((row) => ({
+          firstName: importValue(row, ["firstName", "Prénom", "prenom"]),
+          lastName: importValue(row, ["lastName", "Nom", "nom"]),
+          email: importValue(row, ["email", "Email", "EMAIL"])
+        }))
+      });
     } catch (error) {
-      return json(res, 502, { error: `Compte confirmé mais email non envoyé : ${error.message}` });
+      return json(res, 400, { error: error.message || "Fichier Excel invalide." });
+    }
+  }
+
+  if (method === "POST" && pathname === "/api/admin/users/import") {
+    if (!adminRequired(req, res)) return;
+    try {
+      const input = await body(req);
+      const rows = workbookRowsFromBase64(input.dataBase64);
+      let created = 0;
+      let updated = 0;
+      const errors = [];
+      rows.forEach((row, index) => {
+        const id = Number(importValue(row, ["id", "ID"]));
+        const email = String(importValue(row, ["email", "Email", "EMAIL"])).trim().toLowerCase();
+        const existing = data.users.find((user) => (id && user.id === id) || (email && user.email === email));
+        const result = mergeImportedUser(row, existing);
+        if (result.error) {
+          errors.push(`Ligne ${index + 2} : ${result.error}`);
+          return;
+        }
+        if (result.created) {
+          data.users.push(result.user);
+          created += 1;
+        } else {
+          updated += 1;
+        }
+      });
+      writeData(data);
+      return json(res, 200, { imported: created + updated, created, updated, errors });
+    } catch (error) {
+      return json(res, 400, { error: error.message || "Import Excel impossible." });
     }
   }
 

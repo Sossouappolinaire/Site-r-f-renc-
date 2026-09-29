@@ -20,20 +20,31 @@
     .diagnostic-box{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:13px;background:#fbf8fa;text-align:left;font-size:12px}.diagnostic-row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line)}.diagnostic-row:last-of-type{border-bottom:0}.diagnostic-row b{font-size:11px}.diagnostic-row .ready{color:#277458}.diagnostic-row .missing{color:#b23c5d}.diagnostic-box small{display:block;color:var(--muted);margin-top:10px}
     @media(max-width:900px){.hero{grid-template-columns:1fr;padding-top:30px}.hero-art{height:430px;max-width:570px;width:100%;margin:auto}.feature-grid{grid-template-columns:1fr 1fr}.content-grid{grid-template-columns:1fr}.workspace-grid{grid-template-columns:1fr}.side{position:static;display:flex;overflow:auto;gap:4px}.side-title{display:none}.side-btn{white-space:nowrap;width:auto}.auth-page{grid-template-columns:1fr}.auth-visual{display:none}}
     @media(max-width:590px){.wrap{width:calc(100% - 24px)}.nav{flex-wrap:wrap;gap:14px}.nav-actions{width:100%}.nav-actions .btn{flex:1;padding:10px 11px;font-size:12px}.nav-actions .btn-light{display:inline-flex}.hero h1{font-size:54px}.hero-art{height:350px}.art-card{inset:35px 35px 20px 57px}.float-note{right:0}.section{padding:55px 0}.section-head{display:block}.section-head>p{margin-top:16px}.feature-grid,.dashboard-grid{grid-template-columns:1fr}.quote-section{padding:30px 24px;display:block}.quote-section .btn{margin-top:18px}.footer{display:block}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.auth-main{padding:20px 12px}.auth-card{padding:23px}.form-footer{align-items:stretch;flex-direction:column}.form-footer .btn{width:100%}.welcome{align-items:flex-start;flex-direction:column}.panel{padding:18px}.admin-table{display:block;overflow:auto}.candidate-grid{grid-template-columns:1fr}}
-    .verify-wrap{min-height:100vh;display:grid;place-items:center;padding:28px 18px;background:radial-gradient(circle at 20% 0,#f4ecff 0,transparent 45%),radial-gradient(circle at 90% 100%,#e6fbf2 0,transparent 45%),var(--cream)}
-    .verify-card{width:min(100%,430px);background:#fff;border:1px solid var(--line);border-radius:26px;padding:40px 30px;text-align:center;box-shadow:var(--shadow);animation:verifyIn .45s ease both}
-    .verify-halo{width:126px;height:126px;margin:4px auto 22px;border-radius:32px;display:grid;place-items:center;background:linear-gradient(160deg,#f2f7ff,#eef6ff)}
-    .verify-burst{position:relative;width:78px;height:78px;display:grid;place-items:center}
-    .verify-burst i{position:absolute;top:50%;left:50%;width:5px;height:12px;margin:-6px 0 0 -2.5px;border-radius:4px;background:#33c481;opacity:.85;animation:verifyPop .6s ease both}
-    .verify-check{width:62px;height:62px;border-radius:50%;background:#2ec06f;display:grid;place-items:center;color:#fff;font-size:30px;font-weight:800;box-shadow:0 10px 24px #2ec06f4d;position:relative;z-index:1}
-    .verify-card h2{font:700 24px/1.2 "DM Sans",system-ui,sans-serif;color:var(--ink);margin:0 0 8px;letter-spacing:-.02em}
-    .verify-card p.verify-sub{color:var(--muted);font-size:14px;margin:0 0 26px}
-    .verify-seal{width:88px;height:88px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(150deg,#4ddc9a,#1f9f66);color:#fff;font-size:38px;box-shadow:0 16px 34px #2ec06f3d}
-    .verify-secure{display:inline-flex;gap:8px;align-items:center;color:#22935f;font-size:13px;font-weight:600}
-    .verify-card .btn{width:100%;margin-top:24px}
-    @keyframes verifyIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-    @keyframes verifyPop{0%{opacity:0;transform:rotate(var(--a)) translateY(-22px) scale(.4)}100%{opacity:.9;transform:rotate(var(--a)) translateY(-40px) scale(1)}}
-  </style>
+    /* Direction visuelle inspirée des références : relief doux, surfaces profondes et actions lumineuses. */
+    .auth-main{background:linear-gradient(145deg,#eef3f9,#f8faff);position:relative}
+    .auth-main:before{content:"";position:absolute;width:330px;height:330px;border-radius:50%;background:#dce8f8;opacity:.7;filter:blur(2px);box-shadow:inset 18px 18px 35px #c7d3e3,inset -18px -18px 35px #fff;z-index:0}
+    .auth-card{position:relative;z-index:1;border:0;background:#eef3f9;border-radius:32px;box-shadow:18px 20px 45px #c6d0de,-18px -18px 40px #fff;padding:38px}
+    .auth-top{margin-bottom:30px}.auth-card h2{color:#1c2a45}.auth-card>p{color:#64728a}
+    .auth-card .brand-mark{background:linear-gradient(145deg,#477ff0,#2755bd);box-shadow:7px 7px 14px #c1ccdc,-5px -5px 11px #fff}
+    .auth-card .field input,.auth-card .field select,.auth-card .field textarea{border:0;background:#edf2f8;box-shadow:inset 5px 5px 12px #d3dce8,inset -5px -5px 12px #fff;color:#26354f}
+    .auth-card .field input:focus,.auth-card .field select:focus,.auth-card .field textarea:focus{border:0;box-shadow:inset 3px 3px 8px #d0dae8,0 0 0 4px #4c83ed26}
+    .auth-card .btn-primary,.btn-blue{background:linear-gradient(135deg,#2389ff,#315bd5);box-shadow:7px 8px 16px #b9c9df,-4px -4px 10px #fff}
+    .btn-green{background:linear-gradient(135deg,#19c98b,#168b78)}.btn-cyan{background:linear-gradient(135deg,#1bd6df,#157bbd)}.btn-amber{background:linear-gradient(135deg,#ffc861,#e8902f)}.btn-pink{background:linear-gradient(135deg,#ff7eae,#d94e87)}
+    .btn-primary,.btn-blue,.btn-green,.btn-cyan,.btn-amber,.btn-pink{border:0}
+    .app-shell{background:radial-gradient(circle at 88% 0,#dfeaff 0,transparent 28%),#f4f7fb}
+    .topbar{background:#0c111b;border-bottom:1px solid #1e2c42;box-shadow:0 10px 24px #0b122026}.topbar .brand{color:#fff}.topbar .brand-mark{background:linear-gradient(145deg,#3289ff,#6044d8);box-shadow:none}.topbar .user-chip{color:#fff}.topbar .hint{color:#9eacc2}.topbar .avatar{background:#243759;color:#9ec5ff}
+    .workspace{padding-top:46px}.side-title{color:#7e8da7}.side-btn{color:#71809a}.side-btn.active,.side-btn:hover{background:linear-gradient(135deg,#e2efff,#dce5ff);color:#225fbe;box-shadow:5px 5px 12px #ccd6e4,-4px -4px 10px #fff}
+    .welcome h2,.panel h3,.metric strong{color:#172b4d}.welcome p,.panel>p,.metric span{color:#74839a}
+    .metric,.panel,.card{border:0;background:#f3f7fc;box-shadow:10px 12px 28px #cbd5e224,-8px -8px 22px #fff}
+    .metric{border-radius:20px}.metric strong{font-size:34px}.pill{background:#dff8ee;color:#178368}
+    .admin-table th{color:#7c8ba4}.admin-table td{border-color:#dde6f1;color:#40506a}.admin-table tbody tr:hover{background:#eaf2fc}
+    .email-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0}.email-summary>div{padding:16px;border-radius:16px;background:#eaf2fb;box-shadow:inset 3px 3px 8px #d9e2ed,inset -3px -3px 8px #fff}.email-summary strong{display:block;font:700 25px "Playfair Display",Georgia,serif;color:#245eb7}.email-summary span{font-size:11px;color:#71819a}.email-table-wrap{overflow:auto}.provider-tag,.email-status{display:inline-flex;align-items:center;padding:5px 8px;border-radius:99px;font-size:10px;font-weight:800;white-space:nowrap}.provider-tag{background:#e7e3ff;color:#614ac5}.email-status.draft{background:#fff0c9;color:#a16c12}.email-status.failed{background:#ffe0e7;color:#b23c5d}.failure-cell{max-width:180px;color:#8794a8!important}.empty-cell{text-align:center!important;color:#8a98ab!important;padding:30px!important}.email-note{margin-top:18px!important}
+    .email-preview-modal{width:min(650px,100%);text-align:left;max-height:calc(100vh - 40px);overflow:auto}.email-preview-modal .modal-icon{margin-left:0}.email-preview-modal .kicker{margin-bottom:7px}.email-preview-modal h3{font-size:30px;margin-bottom:8px}.email-preview-intro{margin:0 0 18px!important}.email-preview-meta{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:16px 0}.email-preview-meta>div{padding:11px 13px;border-radius:12px;background:#f4f7fb;border:1px solid #e1e8f1}.email-preview-meta span{display:block;color:#7b8aa2;font-size:9px;font-weight:800;letter-spacing:.08em}.email-preview-meta strong{display:block;color:#263a5d;font-size:12px;margin-top:3px;overflow-wrap:anywhere}.email-preview-meta .email-code{background:#e8f2ff;border-color:#c9ddfb}.email-preview-meta .email-code strong{font-size:23px;letter-spacing:.16em;color:#2169c6}.email-preview-body{white-space:pre-wrap;max-height:250px;overflow:auto;margin:0;padding:16px;border-radius:14px;background:#101827;color:#e7eefb;font:12px/1.65 "DM Sans",system-ui,sans-serif}.email-preview-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:17px}.email-preview-actions .btn{min-width:150px}
+    .progress-value{background:linear-gradient(90deg,#2689ff,#6954df,#ef6d9c)}
+    .data-tools{display:flex;gap:8px;align-items:center}.data-tools label{cursor:pointer}.data-privacy{margin:0 0 16px!important;font-size:11px!important}.import-preview-modal{width:min(560px,100%);text-align:left}.import-preview-modal .modal-icon{margin-left:0}.import-preview-modal h3{font-size:30px;margin-bottom:8px}.import-sample{margin:17px 0;border:1px solid #dfe7f1;border-radius:14px;overflow:hidden;background:#f7faff}.import-label{display:block;padding:10px 13px;background:#eaf2fb;color:#71819a;font-size:9px;font-weight:800;letter-spacing:.08em}.import-sample-row{display:flex;justify-content:space-between;gap:15px;padding:11px 13px;border-top:1px solid #e1e9f2;font-size:12px}.import-sample-row strong{color:#29466e}.import-sample-row span{color:#7b8ba3;overflow-wrap:anywhere}.import-warning{font-size:11px!important;margin:0!important}
+    @media(max-width:590px){.auth-card{padding:25px;border-radius:25px}.auth-main:before{width:260px;height:260px}.email-summary{grid-template-columns:1fr}.email-journal{padding:18px}.email-preview-meta{grid-template-columns:1fr}.email-preview-actions{flex-direction:column-reverse}.email-preview-actions .btn{width:100%}}
+    @media(max-width:590px){.data-tools{width:100%;margin-top:14px}.data-tools .btn{flex:1}.section-head .data-tools{align-items:stretch}.import-sample-row{display:block}.import-sample-row span{display:block;margin-top:4px}}
+   </style>
 </head>
 <body>
   <div id="boot" class="boot">
@@ -51,7 +62,8 @@
     const root = document.getElementById("root");
     const overlay = document.getElementById("overlay");
     const toastEl = document.getElementById("toast");
-    const state = { user: null, role: null, view: "overview", messages: [], announcements: [], users: [], pendingEmail: "" };
+     const state = { user: null, role: null, view: "overview", messages: [], announcements: [], users: [], emailLogs: [], pendingEmail: "" };
+     let emailDraftPreview = null;
     const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[char]));
     const initials = (user) => ((user?.firstName || "C")[0] + (user?.lastName || "C")[0]).toUpperCase();
     const date = (value) => new Intl.DateTimeFormat("fr-FR", { day:"numeric", month:"short" }).format(new Date(value));
@@ -125,9 +137,7 @@
         const rows = [
           ["ADMIN_EMAIL", config.adminEmailConfigured],
           ["ADMIN_PASSWORD", config.adminPasswordConfigured],
-          ["RESEND_API_KEY", config.resendApiKeyConfigured],
-          ["SESSION_SECRET", config.sessionSecretConfigured],
-          ["EMAIL_FROM", Boolean(config.emailFrom)]
+           ["SESSION_SECRET", config.sessionSecretConfigured]
         ];
         output.innerHTML = `<div class="diagnostic-box"><strong>État du serveur</strong>${rows.map(([name, ready]) => `<div class="diagnostic-row"><span>${name}</span><b class="${ready ? "ready" : "missing"}">${ready ? "Chargée" : "Manquante"}</b></div>`).join("")}<small>Les valeurs secrètes ne sont jamais affichées.</small></div>`;
       } catch (error) {
@@ -135,31 +145,17 @@
       }
     }
     function codeVerification() {
-      root.innerHTML = authFrame(`<div class="auth-card"><div class="auth-top"><a class="brand" href="#" onclick="go('')"><span class="brand-mark">♡</span><span>Cœur & Connexions</span></a><a class="back" href="#" onclick="go('connexion')">Retour</a></div><span class="kicker">Dernière vérification</span><h2>Votre code secret.</h2><p>Nous avons envoyé un code unique à <strong>${esc(state.pendingEmail)}</strong>. Il ne peut être utilisé qu’une seule fois.</p><form id="codeForm"><div class="field" style="margin-top:27px"><label>CODE À 6 CHIFFRES</label><input class="code-input" name="code" inputmode="numeric" maxlength="6" pattern="\\d{6}" placeholder="000000" required></div><div id="codeError"></div><button class="btn btn-primary" style="width:100%;margin-top:20px">Ouvrir mon espace <span>→</span></button></form><p class="code-hint">Vous ne trouvez pas l’email ? Vérifiez vos indésirables.</p><button class="btn btn-plain" style="margin-top:8px" onclick="resendCode()">Renvoyer un code</button></div>`, "La confiance commence par un espace sécurisé.");
+       root.innerHTML = authFrame(`<div class="auth-card"><div class="auth-top"><a class="brand" href="#" onclick="go('')"><span class="brand-mark">♡</span><span>Cœur & Connexions</span></a><a class="back" href="#" onclick="go('connexion')">Retour</a></div><span class="kicker">Dernière vérification</span><h2>Votre code secret.</h2><p>Nous avons envoyé un code unique à <strong>${esc(state.pendingEmail)}</strong>. Il ne peut être utilisé qu’une seule fois.</p><form id="codeForm"><div class="field" style="margin-top:27px"><label>CODE À 6 CHIFFRES</label><input class="code-input" name="code" inputmode="numeric" maxlength="6" pattern="\\d{6}" placeholder="000000" required></div><div id="codeError"></div><button class="btn btn-primary" style="width:100%;margin-top:20px">Ouvrir mon espace <span>→</span></button></form><p class="code-hint">Vous ne trouvez pas l’email ? Vérifiez vos indésirables ou contactez l’équipe.</p></div>`, "La confiance commence par un espace sécurisé.");
       document.getElementById("codeForm").onsubmit = async (event) => {
         event.preventDefault();
         const form = new FormData(event.target);
         try {
           const result = await api("/api/auth/verify-code", { method:"POST", body:JSON.stringify({ code:form.get("code") }) });
-          state.user = result.user; state.role = "user"; codeVerified();
+          state.user = result.user; state.role = "user"; go("espace");
         } catch (error) {
           document.getElementById("codeError").innerHTML = `<div class="alert">${esc(error.message)}</div>`;
         }
       };
-    }
-    function codeVerified() {
-      const rays = Array.from({ length: 10 }, (_, index) => `<i style="--a:${index * 36}deg;transform:rotate(${index * 36}deg) translateY(-40px);animation-delay:${index * 0.03}s"></i>`).join("");
-      root.innerHTML = `<div class="verify-wrap"><div class="verify-card"><div class="verify-halo"><div class="verify-burst">${rays}<div class="verify-check">✓</div></div></div><h2>Code vérifié</h2><p class="verify-sub">Votre code a bien été validé.</p><div class="verify-seal">✓</div><span class="verify-secure">🔒 Vérifié et sécurisé</span><button class="btn btn-primary" onclick="go('espace')">Ouvrir mon espace <span>→</span></button></div></div>`;
-      setTimeout(() => { if (document.querySelector(".verify-card")) go("espace"); }, 2400);
-    }
-    async function resendCode() {
-      try {
-        const result = await api("/api/auth/resend-code", { method:"POST" });
-        if (result.delivery === "admin_relay") toast("Code généré : il a été transmis à l’administrateur, qui vous le communiquera.", true);
-        else if (result.delivery === "console") toast("Code généré. L’envoi email n’est pas encore actif : demandez-le à l’administrateur.", true);
-        else toast("Un nouveau code vient d’être envoyé.", true);
-      }
-      catch (error) { toast(error.message); }
     }
     function register() {
       root.innerHTML = authFrame(`<div class="auth-card"><div class="auth-top"><a class="brand" href="#" onclick="go('')"><span class="brand-mark">♡</span><span>Cœur & Connexions</span></a><a class="back" href="#" onclick="go('')">Retour</a></div><span class="kicker">Votre histoire commence ici</span><h2>Créer votre espace.</h2><p>Une demande, puis une validation humaine avant votre première connexion.</p><form id="registerForm"><div class="form-grid"><div class="field"><label>PRÉNOM</label><input name="firstName" autocomplete="given-name" required></div><div class="field"><label>NOM</label><input name="lastName" autocomplete="family-name" required></div><div class="field"><label>TÉLÉPHONE</label><input name="phone" type="tel" required></div><div class="field"><label>EMAIL</label><input name="email" type="email" autocomplete="email" required></div><div class="field"><label>MOT DE PASSE</label><input name="password" type="password" minlength="8" required></div><div class="field"><label>CONFIRMATION</label><input name="passwordConfirmation" type="password" minlength="8" required></div><div class="field"><label>JE SUIS</label><select name="gender"><option value="femme">Une femme</option><option value="homme">Un homme</option><option value="autre">Autre</option></select></div><div class="field"><label>JE SOUHAITE RENCONTRER</label><select name="encounterType"><option value="femme">Une femme</option><option value="homme">Un homme</option><option value="tous">Tout profil compatible</option></select></div><div class="field"><label>TYPE DE COMPTE</label><select name="accountType"><option value="rencontre">Rencontre</option><option value="plan_business">Plan business</option></select></div><div class="field"><label>FORMULE</label><select name="planType"><option value="rencontre_simple">Rencontre simple</option><option value="premium">Premium</option><option value="accompagnement">Accompagnement</option></select></div><div class="field full"><label>PHOTO DE PROFIL <span class="hint">(facultatif)</span></label><div class="upload"><input id="profilePhoto" type="file" accept="image/*"><span class="hint">Les photos restent privées et ne sont jamais publiées automatiquement.</span></div></div></div><label class="checkline"><input name="termsAccepted" type="checkbox" required><span>J’accepte les conditions de discrétion et de responsabilité : je comprends que la plateforme facilite la mise en relation sans garantir l’identité ou le comportement des utilisateurs. L’administrateur n’est pas partie à mes échanges ni à mes engagements.</span></label><div id="registerError"></div><div class="form-footer"><span class="hint">Validation manuelle par l’équipe.</span><button class="btn btn-primary">Envoyer ma demande <span>→</span></button></div></form></div>`, "Une belle histoire mérite un bon départ.");
@@ -194,6 +190,24 @@
     function successAction(title, message) {
       return new Promise((resolve) => { overlay.innerHTML = `<div class="modal"><div class="success-check">✓</div><h3>${title}</h3><p>${message}</p></div>`; overlay.classList.remove("hidden"); setTimeout(() => { overlay.classList.add("hidden"); overlay.innerHTML = ""; resolve(); }, 3000); });
     }
+     function showEmailPreview(email) {
+       emailDraftPreview = email;
+       const code = email.body.match(/\n(\d{6})\n/)?.[1] || "";
+       overlay.innerHTML = `<div class="modal email-preview-modal"><div class="modal-icon">✉</div><span class="kicker">Dernière vérification</span><h3>Message prêt à envoyer</h3><p class="email-preview-intro">Le compte est confirmé. Vérifie le message ci-dessous avant d’ouvrir Gmail.</p><div class="email-preview-meta"><div><span>DESTINATAIRE</span><strong>${esc(email.to)}</strong></div><div><span>OBJET</span><strong>${esc(email.subject)}</strong></div><div class="email-code"><span>CODE DE CONNEXION</span><strong>${esc(code)}</strong></div></div><pre class="email-preview-body">${esc(email.body)}</pre><div class="email-preview-actions"><button class="btn btn-light" type="button" onclick="closeEmailPreview()">Fermer</button><button class="btn btn-blue" type="button" onclick="openEmailDraft()">Ouvrir Gmail <span>→</span></button></div></div>`;
+       overlay.classList.remove("hidden");
+     }
+     function closeEmailPreview() {
+       emailDraftPreview = null;
+       overlay.classList.add("hidden");
+       overlay.innerHTML = "";
+     }
+     function openEmailDraft() {
+       if (!emailDraftPreview?.gmailUrl) return;
+       const gmailUrl = emailDraftPreview.gmailUrl;
+       closeEmailPreview();
+       const opened = window.open(gmailUrl, "_blank");
+       if (!opened) window.location.href = gmailUrl;
+     }
     async function loadUser() {
       const [me, announcements, messages] = await Promise.all([api("/api/me"), api("/api/announcements"), api("/api/messages")]);
       state.user = me; state.announcements = announcements; state.messages = messages;
@@ -231,24 +245,77 @@
     async function acceptMatch(id) {
       try { await api(`/api/matches/${id}/accept`, { method:"POST" }); await loadUser(); toast("Votre choix a été transmis.", true); setView("messages"); } catch (error) { toast(error.message); }
     }
+     function exportUsersExcel() {
+       window.location.href = "/api/admin/users/export";
+     }
+     function fileBase64(file) {
+       return new Promise((resolve, reject) => {
+         const reader = new FileReader();
+         reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+         reader.onerror = reject;
+         reader.readAsDataURL(file);
+       });
+     }
+     async function prepareUsersImport(event) {
+       const file = event.target.files?.[0];
+       event.target.value = "";
+       if (!file) return;
+       try {
+         const dataBase64 = await fileBase64(file);
+         const preview = await api("/api/admin/users/import-preview", { method:"POST", body:JSON.stringify({ fileName:file.name, dataBase64 }) });
+         window.pendingUsersImport = { fileName:file.name, dataBase64, preview };
+         showUsersImportPreview(preview);
+       } catch (error) { toast(error.message); }
+     }
+     function showUsersImportPreview(preview) {
+       const sample = preview.sample.map((item) => `<div class="import-sample-row"><strong>${esc(`${item.firstName || ""} ${item.lastName || ""}`.trim() || "Sans nom")}</strong><span>${esc(item.email || "Email manquant")}</span></div>`).join("");
+       overlay.innerHTML = `<div class="modal import-preview-modal"><div class="modal-icon">↥</div><span class="kicker">Import Excel</span><h3>Vérifier le fichier</h3><p><strong>${esc(preview.fileName)}</strong> contient <strong>${preview.rowCount}</strong> ligne${preview.rowCount > 1 ? "s" : ""}.</p><div class="import-sample"><span class="import-label">APERÇU DES PREMIÈRES LIGNES</span>${sample || `<p class="hint">Aucun aperçu disponible.</p>`}</div><p class="privacy import-warning">L’import ajoute les nouveaux emails et met à jour les personnes reconnues par leur ID ou leur email. Les mots de passe, hashes et codes secrets du serveur ne sont jamais importés. Les nouveaux profils seront placés en attente de validation.</p><div class="email-preview-actions"><button class="btn btn-light" type="button" onclick="cancelUsersImport()">Annuler</button><button class="btn btn-blue" type="button" onclick="confirmUsersImport()">Importer les données <span>→</span></button></div></div>`;
+       overlay.classList.remove("hidden");
+     }
+     function cancelUsersImport() {
+       window.pendingUsersImport = null;
+       overlay.classList.add("hidden");
+       overlay.innerHTML = "";
+     }
+     async function confirmUsersImport() {
+       const pending = window.pendingUsersImport;
+       if (!pending) return;
+       try {
+         const result = await progressAction("Import des utilisateurs", () => api("/api/admin/users/import", { method:"POST", body:JSON.stringify(pending) }));
+         window.pendingUsersImport = null;
+         toast(`${result.imported} ligne${result.imported > 1 ? "s" : ""} importée${result.imported > 1 ? "s" : ""}.`, true);
+         await loadAdmin();
+         adminView("users");
+       } catch (error) { cancelUsersImport(); toast(error.message); }
+     }
     async function loadAdmin() {
-      const [users, messages, announcements] = await Promise.all([api("/api/admin/users"), api("/api/messages"), api("/api/announcements")]);
-      state.users = users; state.messages = messages; state.announcements = announcements;
+       const [users, messages, announcements, emailLogs] = await Promise.all([api("/api/admin/users"), api("/api/messages"), api("/api/announcements"), api("/api/admin/email-logs")]);
+       state.users = users; state.messages = messages; state.announcements = announcements; state.emailLogs = emailLogs;
     }
     function adminSpace() {
-      const side = `<button class="side-btn active" onclick="adminView('dashboard')">Tableau de bord</button><button class="side-btn" onclick="adminView('inbox')">Messages entrants</button><button class="side-btn" onclick="adminView('users')">Profils inscrits</button>`;
+       const side = `<button class="side-btn active" onclick="adminView('dashboard')">Tableau de bord</button><button class="side-btn" onclick="adminView('inbox')">Messages entrants</button><button class="side-btn" onclick="adminView('users')">Profils inscrits</button><button class="side-btn" onclick="adminView('emails')">Journal des emails</button>`;
       root.innerHTML = shell(side, `<div class="welcome"><div><span class="kicker">Espace équipe</span><h2>Bonjour, équipe.</h2><p>Validez les demandes et accompagnez chaque personne avec attention.</p></div><span class="pill">Administration</span></div><div id="adminContent"></div>`); adminView("dashboard");
     }
     function adminView(view) {
-      document.querySelectorAll(".side-btn").forEach((button, index) => button.classList.toggle("active", ["dashboard","inbox","users"][index] === view));
+       document.querySelectorAll(".side-btn").forEach((button, index) => button.classList.toggle("active", ["dashboard","inbox","users","emails"][index] === view));
       const element = document.getElementById("adminContent");
       if (view === "dashboard") element.innerHTML = `<div class="dashboard-grid"><div class="metric"><strong>${state.users.length}</strong><span>profils inscrits</span></div><div class="metric"><strong>${state.users.filter((user) => user.status === "pending").length}</strong><span>demandes à valider</span></div><div class="metric"><strong>${state.messages.filter((message) => message.senderRole === "user").length}</strong><span>messages entrants</span></div></div><div class="content-grid"><div class="panel"><h3>Publier une annonce</h3><form id="announcementForm" style="margin-top:15px"><div class="field"><label>TITRE</label><input name="title" required></div><div class="field" style="margin-top:12px"><label>MESSAGE</label><textarea name="body" required></textarea></div><button class="btn btn-primary" style="margin-top:12px">Publier</button></form></div><div class="panel"><h3>Règle de confiance</h3><p class="privacy">Une personne peut accepter une seule proposition. La révélation des photos arrive seulement après son accord et la confirmation de l’équipe.</p></div></div>`;
       if (view === "inbox") element.innerHTML = `<div class="panel"><h3>Messages entrants</h3><div class="message-list">${state.messages.filter((message) => message.senderRole === "user").map((message) => `<div class="card"><small class="hint">Message #${message.id} · ${date(message.createdAt)}</small><p>${esc(message.body)}</p><button class="btn btn-pink btn-small" onclick="replyForm(${message.id})">Répondre avec des profils</button><div id="reply-${message.id}"></div></div>`).join("") || `<p class="hint">Aucun message entrant pour le moment.</p>`}</div></div>`;
-      if (view === "users") element.innerHTML = `<div class="panel"><div class="section-head"><div><h3>Personnes inscrites</h3><p>La confirmation envoie automatiquement le code secret par email.</p></div></div><div style="overflow:auto"><table class="admin-table"><thead><tr><th>Nom</th><th>Compte</th><th>Recherche</th><th>État</th><th>Action</th></tr></thead><tbody>${state.users.map((user) => `<tr><td><strong>${esc(user.firstName + " " + user.lastName)}</strong><br><small class="hint">${esc(user.email)}</small></td><td>${esc(user.accountType === "plan_business" ? "Business" : "Rencontre")}</td><td>${esc(user.encounterType)}</td><td class="${user.status === "pending" ? "status-pending" : "status-active"}">${user.status === "pending" ? "En attente" : "Confirmé"}</td><td>${user.status === "pending" ? `<button class="btn btn-primary btn-small" onclick="approveUser(${user.id})">Confirmer</button>` : `<span class="hint">Email envoyé</span>`}</td></tr>`).join("")}</tbody></table></div></div>`;
+       if (view === "users") element.innerHTML = `<div class="panel"><div class="section-head"><div><span class="kicker">Données</span><h3>Personnes inscrites</h3><p>Exportez ou réimportez les informations de profil dans un fichier Excel.</p></div><div class="data-tools"><button class="btn btn-blue btn-small" type="button" onclick="exportUsersExcel()">↓ Exporter Excel</button><label class="btn btn-green btn-small">↑ Importer Excel<input id="usersImportFile" type="file" accept=".xlsx,.xls" onchange="prepareUsersImport(event)" hidden></label></div></div><p class="privacy data-privacy">Les données d’authentification sensibles — mots de passe, hashes et codes secrets — sont exclues du fichier.</p><div style="overflow:auto"><table class="admin-table"><thead><tr><th>Nom</th><th>Compte</th><th>Recherche</th><th>État</th><th>Action</th></tr></thead><tbody>${state.users.map((user) => `<tr><td><strong>${esc(user.firstName + " " + user.lastName)}</strong><br><small class="hint">${esc(user.email)}</small></td><td>${esc(user.accountType === "plan_business" ? "Business" : "Rencontre")}</td><td>${esc(user.encounterType)}</td><td class="${user.status === "pending" ? "status-pending" : "status-active"}">${user.status === "pending" ? "En attente" : "Confirmé"}</td><td>${user.status === "pending" ? `<button class="btn btn-primary btn-small" onclick="approveUser(${user.id})">Confirmer</button>` : `<span class="hint">Gmail à envoyer</span>`}</td></tr>`).join("")}</tbody></table></div></div>`;
+       if (view === "emails") {
+         const failures = state.emailLogs.filter((item) => item.status === "failed").length;
+         element.innerHTML = `<div class="panel email-journal"><div class="section-head"><div><span class="kicker">Traçabilité</span><h3>Journal des emails</h3><p>Les brouillons Gmail préparés par l’équipe, avec leur état connu.</p></div><span class="pill">${state.emailLogs.length} événement${state.emailLogs.length > 1 ? "s" : ""}</span></div><div class="email-summary"><div><strong>${state.emailLogs.length}</strong><span>Total préparé</span></div><div><strong>${state.emailLogs.filter((item) => item.status === "draft").length}</strong><span>Brouillons Gmail</span></div><div><strong>${failures}</strong><span>Échecs enregistrés</span></div></div><div class="email-table-wrap"><table class="admin-table"><thead><tr><th>Destinataire</th><th>Objet</th><th>Fournisseur</th><th>Statut</th><th>Raison de l’échec</th><th>Date</th></tr></thead><tbody>${state.emailLogs.map((item) => `<tr><td><strong>${esc(item.recipient)}</strong></td><td>${esc(item.subject)}</td><td><span class="provider-tag">${esc(item.provider)}</span></td><td><span class="email-status ${item.status === "failed" ? "failed" : "draft"}">${item.status === "failed" ? "Échec" : "Brouillon"}</span></td><td class="failure-cell">${esc(item.failureReason || "—")}</td><td>${date(item.createdAt)}</td></tr>`).join("") || `<tr><td colspan="6" class="empty-cell">Aucun email préparé pour le moment.</td></tr>`}</tbody></table></div><p class="privacy email-note">Gmail manuel ne fournit pas de statut de livraison au site. « Brouillon » signifie que le message a été préparé ; l’envoi et la réception se vérifient dans Gmail.</p></div>`;
+       }
       document.getElementById("announcementForm")?.addEventListener("submit", createAnnouncement);
     }
     async function approveUser(id) {
-      try { await progressAction("Confirmation du profil", () => api(`/api/admin/users/${id}/approve`, { method:"POST" })); toast("Profil confirmé et email envoyé.", true); await loadAdmin(); adminView("users"); } catch (error) { toast(error.message); }
+      try {
+        const result = await progressAction("Confirmation du profil", () => api(`/api/admin/users/${id}/approve`, { method:"POST" }));
+         showEmailPreview(result.email);
+         toast("Profil confirmé. Vérifie le message avant de l’envoyer.", true);
+        await loadAdmin();
+        adminView("users");
+       } catch (error) { toast(error.message); }
     }
     function replyForm(id) {
       const target = document.getElementById(`reply-${id}`);

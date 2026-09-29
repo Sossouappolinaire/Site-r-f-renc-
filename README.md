@@ -7,7 +7,7 @@ Version modernisée du site de rencontre avec :
 - animation de progression pendant une inscription ou un enregistrement ;
 - écran de succès visible 3 secondes après l’inscription ;
 - validation manuelle par l’administrateur ;
-- email de confirmation contenant un code secret personnel à 6 chiffres ;
+- préparation d’un message Gmail de confirmation contenant un code secret personnel à 6 chiffres ;
 - vérification du code lors de la première connexion ;
 - code haché, unique et à usage unique ;
 - espace utilisateur, messages, photos privées et espace administrateur.
@@ -22,14 +22,18 @@ Version modernisée du site de rencontre avec :
    - `ADMIN_EMAIL` : email qui reçoit les nouvelles inscriptions ;
    - `ADMIN_PASSWORD` : mot de passe privé de l’administrateur ;
    - `SESSION_SECRET` : longue valeur aléatoire ;
-   - `RESEND_API_KEY` : clé API Resend pour envoyer les emails ;
-   - `EMAIL_FROM` : expéditeur validé par Resend, par exemple `Cœur & Connexions <noreply@votredomaine.com>`.
+   
+`config.js` récupère automatiquement ces valeurs depuis `process.env` après le déploiement. Il ne faut pas remplacer les valeurs vides par un mot de passe ou une valeur secrète dans ce fichier.
 
-Sans `RESEND_API_KEY`, le serveur fonctionne en test mais écrit les emails dans les logs au lieu de les envoyer. Pour un vrai site, cette variable est indispensable.
+## Confirmation par Gmail
 
-`config.js` récupère automatiquement ces valeurs depuis `process.env` après le déploiement. Il ne faut pas remplacer les valeurs vides par une clé API, un mot de passe ou une valeur secrète dans ce fichier.
+Quand une personne clique sur **Inscription**, le serveur génère un code secret à 6 chiffres et le conserve chiffré. Quand l’administrateur clique ensuite sur **Confirmer**, le serveur confirme le compte et prépare le message avec ce même code. L’interface ouvre Gmail dans un nouvel onglet avec :
 
-`EMAIL_FROM` est l’adresse affichée comme expéditeur des emails. Avec Resend, le domaine utilisé doit être vérifié pour la production. `onboarding@resend.dev` peut servir pour un premier test selon les restrictions du compte Resend.
+- l’adresse Gmail de la personne déjà renseignée ;
+- l’objet déjà renseigné ;
+- le message complet et le code déjà renseignés.
+
+L’administrateur vérifie le message puis clique sur **Envoyer** dans Gmail. Aucun service d’email, aucune clé API Resend et aucune adresse d’expéditeur technique ne sont nécessaires.
 
 `SESSION_SECRET` est une longue valeur aléatoire qui signe les sessions. Dans `render.yaml`, Render la génère automatiquement avec `generateValue: true`; il ne faut pas l’inventer ni la publier.
 
@@ -42,6 +46,3 @@ Le fichier `data.json` est créé automatiquement. Le stockage local d’un héb
 `index.html` peut être servi par presque n’importe quel hébergeur statique, mais l’inscription, l’administrateur, la validation, les sessions et les emails nécessitent le serveur Node.js. L’application complète doit donc être déployée sur un hébergeur qui accepte Node.js, comme Render, Railway, Fly.io, un VPS ou Replit Deployments. Un hébergement HTML statique seul ne suffit pas.
 
 Les conditions affichées et envoyées par email sont une base produit, pas un avis juridique. Faites-les relire et adapter aux règles de votre pays avant ouverture publique.
-## Envoi des emails
-
-Tant que le domaine expediteur nest pas verifie chez le fournisseur email, les emails destines aux membres sont automatiquement transmis a ADMIN_EMAIL (sujet prefixe "A transmettre a ..."), au lieu de bloquer la connexion. Une fois le domaine verifie et EMAIL_FROM mis a jour, les envois partent directement aux membres.
