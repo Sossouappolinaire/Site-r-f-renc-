@@ -1,48 +1,56 @@
 # Cœur & Connexions
 
-Version modernisée du site de rencontre avec :
+Site de rencontre privé avec validation manuelle des profils, photo de profil obligatoire, codes de connexion à usage unique et espace administrateur.
 
-- configuration centralisée dans `config.js` ;
-- interface responsive `index.html` avec barre de chargement colorée au démarrage ;
-- animation de progression pendant une inscription ou un enregistrement ;
-- écran de succès visible 3 secondes après l’inscription ;
-- validation manuelle par l’administrateur ;
-- préparation d’un message Gmail de confirmation contenant un code secret personnel à 6 chiffres ;
-- vérification du code lors de la première connexion ;
-- code haché, unique et à usage unique ;
-- espace utilisateur, messages, photos privées et espace administrateur.
+## Déploiement Node.js
 
-## Déploiement Render
+Le ZIP contient une application autonome. Sur Render, Railway, Fly.io ou un VPS :
 
-1. Décompresser l’archive et envoyer le dossier dans un dépôt GitHub.
-2. Dans Render, créer un **Web Service** relié au dépôt.
-3. Utiliser `npm install` comme commande de build et `npm start` comme commande de démarrage.
-4. Configurer les variables suivantes :
+1. Décompressez l’archive.
+2. Lancez `npm install`.
+3. Lancez `npm start`.
+4. Configurez les variables suivantes :
+   - `ADMIN_EMAIL` : adresse de connexion de l’administrateur ;
+   - `ADMIN_PASSWORD` : mot de passe de l’administrateur ;
+   - `SESSION_SECRET` : longue valeur aléatoire, différente en production.
 
-   - `ADMIN_EMAIL` : email qui reçoit les nouvelles inscriptions ;
-   - `ADMIN_PASSWORD` : mot de passe privé de l’administrateur ;
-   - `SESSION_SECRET` : longue valeur aléatoire ;
-   
-`config.js` récupère automatiquement ces valeurs depuis `process.env` après le déploiement. Il ne faut pas remplacer les valeurs vides par un mot de passe ou une valeur secrète dans ce fichier.
+Le serveur écoute sur `PORT` lorsqu’il est fourni par l’hébergeur, sinon sur le port `8080`.
 
-## Confirmation par Gmail
+## Envoi des codes
 
-Quand une personne clique sur **Inscription**, le serveur génère un code secret à 6 chiffres et le conserve chiffré. Quand l’administrateur clique ensuite sur **Confirmer**, le serveur confirme le compte et prépare le message avec ce même code. L’interface ouvre Gmail dans un nouvel onglet avec :
+Dans l’espace administrateur, ouvrez **Envoi des codes** :
 
-- l’adresse Gmail de la personne déjà renseignée ;
-- l’objet déjà renseigné ;
-- le message complet et le code déjà renseignés.
+- **Envoi manuel par Gmail** prépare un brouillon que l’administrateur vérifie puis envoie lui-même ;
+- **API Mailgun** demande les trois valeurs de la capture :
+  - la clé API Mailgun ;
+  - le domaine Mailgun ou Sandbox ;
+  - l’URL de base, généralement `https://api.mailgun.net`.
 
-L’administrateur vérifie le message puis clique sur **Envoyer** dans Gmail. Aucun service d’email, aucune clé API Resend et aucune adresse d’expéditeur technique ne sont nécessaires.
+Le bouton **Vérifier et enregistrer** appelle l’API Mailgun pour confirmer le domaine avant d’enregistrer la configuration. La clé est chiffrée avec `SESSION_SECRET` et n’est jamais affichée dans l’interface.
 
-`SESSION_SECRET` est une longue valeur aléatoire qui signe les sessions. Dans `render.yaml`, Render la génère automatiquement avec `generateValue: true`; il ne faut pas l’inventer ni la publier.
+Après confirmation d’un profil, le code est envoyé automatiquement uniquement si la vérification Mailgun a réussi. En cas d’échec, le profil reste confirmé mais l’échec est inscrit dans le journal des emails afin d’être corrigé sans perdre la trace de l’opération.
 
-## Important pour les données
+Une photo de profil est obligatoire lors de l’inscription. Elle est enregistrée sur le compte comme photo principale et affichée comme avatar dans l’espace membre. L’administrateur conserve la validation du profil avant tout envoi de code.
 
-Le fichier `data.json` est créé automatiquement. Le stockage local d’un hébergeur gratuit peut être effacé lors d’un redémarrage ou d’un nouveau déploiement. Pour conserver les comptes et photos en production, utilisez un disque persistant ou remplacez `data.json` par PostgreSQL et un stockage d’objets.
+## Mot de passe oublié
 
-## Peut-on le déployer partout ?
+Depuis la page de connexion, un membre peut demander la réinitialisation de son mot de passe :
 
-`index.html` peut être servi par presque n’importe quel hébergeur statique, mais l’inscription, l’administrateur, la validation, les sessions et les emails nécessitent le serveur Node.js. L’application complète doit donc être déployée sur un hébergeur qui accepte Node.js, comme Render, Railway, Fly.io, un VPS ou Replit Deployments. Un hébergement HTML statique seul ne suffit pas.
+1. il saisit son adresse email ;
+2. un code à 6 chiffres valable 15 minutes est généré ;
+3. il saisit ce code ;
+4. il choisit et confirme son nouveau mot de passe.
 
-Les conditions affichées et envoyées par email sont une base produit, pas un avis juridique. Faites-les relire et adapter aux règles de votre pays avant ouverture publique.
+Lorsque Mailgun est configuré et vérifié, le code est envoyé automatiquement à l’adresse du compte. En mode manuel, la demande est enregistrée dans le journal administrateur avec un brouillon Gmail que l’administrateur peut ouvrir et envoyer.
+
+## Données
+
+Les comptes sont conservés dans `data.json`, créé automatiquement au premier démarrage. Sur un hébergeur dont le disque est temporaire, configurez un disque persistant avant une utilisation réelle.
+
+## Sécurité
+
+- Limitation des tentatives (connexion, codes à 6 chiffres, réinitialisation, inscription, mot de passe oublié), par IP et par compte.
+- Les photos sont réduites côté navigateur (1280 px, JPEG) ; le serveur refuse tout ce qui n’est pas JPEG/PNG/WebP/GIF ou dépasse 2 Mo par photo.
+- Sessions avec expiration (7 jours ; 15 minutes pour les étapes code/réinitialisation) et cookie `Secure` en production (`NODE_ENV=production` ou `RENDER`).
+- Les requêtes `POST` provenant d’un autre site sont refusées (contrôle de l’en-tête `Origin`).
+- Le mot de passe administrateur est comparé en temps constant.

@@ -1,15 +1,13 @@
 {
-  "name": "coeur-connexions",
-  "version": "2.0.0",
+  "name": "@workspace/api-server",
+  "version": "0.0.0",
   "private": true,
-  "description": "Cœur & Connexions - espace de rencontre confidentiel",
+  "type": "module",
   "scripts": {
-    "start": "node server.js"
+    "dev": "node server.cjs",
+    "build": "node -e \"console.log('Cœur & Connexions is ready to run')\"",
+    "start": "node server.cjs",
+    "typecheck": "node --check server.cjs && node --check config.cjs"
   },
-  "engines": {
-    "node": ">=20"
-  },
-  "dependencies": {
-    "xlsx": "^0.18.5"
-  }
+  "dependencies": {}
 }
