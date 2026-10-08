@@ -7,7 +7,7 @@
     "dev": "node server.cjs",
     "build": "node -e \"console.log('Cœur & Connexions is ready to run')\"",
     "start": "node server.cjs",
-    "typecheck": "node --check server.cjs && node --check config.cjs"
+    "typecheck": "node --check server.cjs && node --check config.cjs && node --check plans.cjs"
   },
   "dependencies": {}
 }

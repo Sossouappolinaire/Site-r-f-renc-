@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Succès · Cœur &amp; Connexions</title>
+<style>
+:root{--rose:#e5093f;--ink:#1e2a3a;--muted:#6b7a8d;--bg:#fff5f7;--line:#f0d5dc}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+main{max-width:560px;margin:0 auto;padding:18px 14px 40px}
+h1{font-size:22px;margin:6px 0 2px}.muted{color:var(--muted);font-size:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0}
+.card h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.who{display:flex;gap:12px;align-items:center}.who img{width:84px;height:104px;object-fit:cover;border-radius:12px}
+.ok{background:#e9f9ef;border-color:#bfe8cd;font-weight:600}
+.warn{background:#fff6e0;border-color:#f0dca0}
+#box{height:300px;overflow:auto;padding:4px 0}.m{display:flex;margin:6px 0}.m.me{justify-content:flex-end}
+.b{max-width:80%;padding:9px 12px;border-radius:14px;border:1px solid var(--line);background:#fff;word-wrap:break-word}.me .b{background:#ffe3ea}
+.b small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+form{display:flex;gap:8px;margin-top:10px}input{flex:1;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:16px}
+button,a.btn{background:var(--rose);color:#fff;border:0;border-radius:12px;padding:12px 16px;font-size:15px;font-weight:600;text-decoration:none;display:inline-block}
+a.light{background:#fff;color:var(--ink);border:1px solid var(--line)}
+</style>
+</head>
+<body>
+<main>
+  <h1>Cœur &amp; Connexions</h1>
+  <p class="muted">Page de confirmation</p>
+  <div id="root"><p class="muted">Vérification…</p></div>
+</main>
+<script>
+const root=document.getElementById("root");
+const $=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!==undefined)e.textContent=x;return e};
+const api=async(p,o={})=>{const r=await fetch(p,{credentials:"same-origin",headers:{"Content-Type":"application/json"},...o});const j=await r.json().catch(()=>({}));if(!r.ok){const e=new Error(j.error||"Erreur.");e.status=r.status;throw e}return j};
+const hm=i=>new Date(i).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+let timer=null,planId=null;
+function msg(cls,text,link){root.replaceChildren();const c=$("div","card "+cls);c.append($("p","",text));root.append(c);if(link){const a=$("a","btn light","Retour au site");a.href="/";a.style.marginTop="8px";root.append(a)}}
+async function start(){
+  try{
+    const s=await api("/api/plans/success",{method:"POST"});
+    planId=s.planId;
+    if(s.locked){
+      msg("warn",s.late?"Le délai de 10 minutes est dépassé. L’administrateur a été prévenu : la discussion s’ouvrira dès qu’il aura confirmé. Gardez cette page ouverte.":"En attente de l’administrateur… Gardez cette page ouverte.",false);
+      clearTimeout(timer);timer=setTimeout(start,5000);return}
+    draw(s);poll()
+  }catch(e){
+    if(e.status===401)msg("warn","Connectez-vous à votre compte puis rouvrez cette page.",true);
+    else msg("warn",e.message,true)
+  }
+}
+function draw(s){
+  root.replaceChildren();
+  const ok=$("div","card ok","✅ On t’a ouvert la discussion avec "+s.contact.name);
+  const me=$("div","card");me.append($("h2","","Votre demande"));me.append($("div","",s.me.name));me.append($("div","muted","Téléphone : "+(s.me.phone||"—")));me.append($("div","muted","WhatsApp : "+s.me.whatsapp));
+  const ct=$("div","card");ct.append($("h2","","Mise en contact"));
+  const w=$("div","who");if(s.contact.photoUrl){const i=$("img");i.src=s.contact.photoUrl;i.alt="";w.append(i)}
+  const t=$("div");t.append($("div","",s.contact.name));
+  const a=$("a","muted","WhatsApp : "+s.contact.whatsapp);a.href="https://wa.me/"+encodeURIComponent(s.contact.whatsapp);a.target="_blank";a.rel="noopener";t.append(a);w.append(t);ct.append(w);
+  const ch=$("div","card");ch.append($("h2","","Discussion avec "+s.contact.name));
+  const box=$("div");box.id="box";ch.append(box);
+  const f=$("form");const inp=$("input");inp.maxLength=1000;inp.placeholder="Votre message…";inp.required=true;inp.autocomplete="off";
+  const b=$("button","","Envoyer");f.append(inp,b);ch.append(f);
+  ch.append($("p","muted","Discussion effacée chaque nuit à 00h. L’équipe peut la consulter pour votre sécurité."));
+  const back=$("a","btn light","Retour au site");back.href="/";
+  root.append(ok,me,ct,ch,back);
+  f.addEventListener("submit",async e=>{e.preventDefault();const v=inp.value.trim();if(!v)return;inp.value="";try{await api("/api/plans/"+planId+"/chat",{method:"POST",body:JSON.stringify({body:v})});load()}catch(x){inp.value=v;alert(x.message)}})
+}
+async function load(){
+  const box=document.getElementById("box");if(!box)return;
+  try{
+    const c=await api("/api/plans/"+planId+"/chat");
+    if(c.closed||c.locked){msg("warn",c.closed?"Cette discussion est terminée.":"La discussion a été mise en pause par l’administrateur.",true);return false}
+    const stick=box.scrollTop+box.clientHeight>=box.scrollHeight-40;
+    box.replaceChildren();
+    if(!c.messages.length)box.append($("p","muted","Dites bonjour 👋"));
+    for(const m of c.messages){const r=$("div","m"+(m.mine?" me":""));const bb=$("div","b",m.body);bb.append($("small","",hm(m.at)));r.append(bb);box.append(r)}
+    if(stick)box.scrollTop=box.scrollHeight;
+  }catch(_e){}
+  return true
+}
+function poll(){load().then(()=>{});clearInterval(window.__p);window.__p=setInterval(async()=>{const a=document.activeElement;if(a&&a.tagName==="INPUT"&&a.value)return;if(await load()===false)clearInterval(window.__p)},4000)}
+start();
+</script>
+</body>
+</html>

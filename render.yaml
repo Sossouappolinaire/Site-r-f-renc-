@@ -13,3 +13,5 @@ services:
         sync: false
       - key: SESSION_SECRET
         generateValue: true
+      - key: ADMIN_WHATSAPP
+        value: "22995501564"

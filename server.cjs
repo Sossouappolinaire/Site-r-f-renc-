@@ -8,9 +8,16 @@ const config = require("./config.cjs");
 const PORT = config.port;
 const DATA_FILE = path.join(__dirname, "data.json");
 const INDEX_FILE = path.join(__dirname, "index.html");
+const SUCCESS_FILE = path.join(__dirname, "success.html");
 const sessions = new Map();
 const SESSION_TTL = 7 * 24 * 3600 * 1000;
 const STEP_TTL = 15 * 60 * 1000;
+const REMEMBER_TTL = 30 * 24 * 3600 * 1000;
+const SHORT_TTL = 12 * 3600 * 1000;
+const CODE_TTL = 30 * 86400000;
+const RESET_TTL = 60 * 60 * 1000;
+const ONLINE_MS = 2 * 60 * 1000;
+let presenceDirty = false;
 const MAX_BODY = 10 * 1024 * 1024;
 const MAX_PHOTO_CHARS = 2_800_000;
 const COOKIE_SECURE = process.env.COOKIE_SECURE ? process.env.COOKIE_SECURE === "true" : Boolean(process.env.RENDER || process.env.NODE_ENV === "production");
@@ -19,16 +26,13 @@ const seed = {
   nextUserId: 1,
   nextMessageId: 1,
   nextAnnouncementId: 2,
-  nextEmailLogId: 1,
   users: [],
   messages: [],
-  emailLogs: [],
   usedLoginCodeHashes: [],
-  mailConfig: { mode: "manual", domain: "", baseUrl: "https://api.mailgun.net", encryptedApiKey: "" },
   announcements: [{
     id: 1,
     title: "Bienvenue dans votre espace privé",
-    body: "Votre demande sera étudiée avec attention. L’équipe vous préviendra par email dès qu’elle sera confirmée.",
+    body: "Votre compte est actif dès l’inscription. Conservez précieusement le code secret affiché à la fin de votre inscription : il vous sera demandé lors de votre première connexion.",
     createdAt: new Date().toISOString(),
   }],
 };
@@ -85,10 +89,28 @@ function writeData() {
 let data = readData();
 data.users = Array.isArray(data.users) ? data.users : [];
 data.messages = Array.isArray(data.messages) ? data.messages : [];
-data.emailLogs = Array.isArray(data.emailLogs) ? data.emailLogs : [];
 data.announcements = Array.isArray(data.announcements) ? data.announcements : clone(seed.announcements);
 data.usedLoginCodeHashes = Array.isArray(data.usedLoginCodeHashes) ? data.usedLoginCodeHashes : [];
-data.mailConfig = { ...seed.mailConfig, ...(data.mailConfig || {}) };
+const plans = require("./plans.cjs")({ data, writeData, json, readBody, getSession, currentUser, adminRequired, userRequired, limited, config });
+setInterval(() => { if (presenceDirty) { presenceDirty = false; try { writeData(); } catch (_error) {} } }, 60 * 1000).unref();
+function markOnline(user) { user.lastLoginAt = new Date().toISOString(); user.lastSeenAt = Date.now(); user.loggedOutAt = null; writeData(); }
+function markOffline(userId) { const user = data.users.find((item) => item.id === userId); if (user) { user.loggedOutAt = new Date().toISOString(); writeData(); } }
+function digits(value) { return String(value || "").replace(/\D/g, ""); }
+function samePhone(a, b) {
+  const x = digits(a).replace(/^0+/, ""), y = digits(b).replace(/^0+/, "");
+  const [short, long] = x.length <= y.length ? [x, y] : [y, x];
+  return short.length >= 8 && (short === long || long.endsWith(short));
+}
+function holdUserSessions(user) {
+  for (const [token, value] of sessions) if (value.role === "user" && value.id === user.id) sessions.delete(token);
+  user.loggedOutAt = new Date().toISOString();
+}
+function presenceOf(user) {
+  const seen = user.lastSeenAt || 0;
+  const online = Boolean(!user.loggedOutAt && seen && Date.now() - seen < ONLINE_MS);
+  const offlineSince = online ? null : (user.loggedOutAt || (seen ? new Date(seen).toISOString() : null));
+  return { online, offlineSince, neverConnected: !user.lastLoginAt };
+}
 
 function json(res, status, payload) {
   const body = JSON.stringify(payload);
@@ -137,10 +159,10 @@ function parseCookies(req) {
   }, {});
 }
 const cookieFlags = () => `HttpOnly; SameSite=Lax; Path=/${COOKIE_SECURE ? "; Secure" : ""}`;
-function setSession(res, value, ttl = SESSION_TTL) {
+function setSession(res, value, ttl = SESSION_TTL, persistent = true) {
   const token = crypto.randomBytes(32).toString("hex");
   sessions.set(token, { ...value, expiresAt: Date.now() + ttl });
-  res.setHeader("Set-Cookie", `cc_session=${token}; ${cookieFlags()}; Max-Age=${Math.floor(ttl / 1000)}`);
+  res.setHeader("Set-Cookie", `cc_session=${token}; ${cookieFlags()}${persistent ? `; Max-Age=${Math.floor(ttl / 1000)}` : ""}`);
 }
 function getSession(req) {
   const token = parseCookies(req).cc_session;
@@ -155,9 +177,11 @@ setInterval(() => {
 }, 10 * 60 * 1000).unref();
 function currentUser(req) {
   const current = getSession(req);
-  return current?.role === "user" ? data.users.find((item) => item.id === current.id) : null;
+  const user = current?.role === "user" ? data.users.find((item) => item.id === current.id) : null;
+  if (user) { user.lastSeenAt = Date.now(); presenceDirty = true; }
+  return user || null;
 }
-function readBody(req) {
+function readBody(req, max = MAX_BODY) {
   return new Promise((resolve, reject) => {
     let raw = "";
     let size = 0;
@@ -167,7 +191,7 @@ function readBody(req) {
     req.on("data", (chunk) => {
       if (done) return;
       size += Buffer.byteLength(chunk);
-      if (size > MAX_BODY) { fail("Requête trop volumineuse.", 413); req.resume(); return; }
+      if (size > max) { fail("Requête trop volumineuse.", 413); req.resume(); return; }
       raw += chunk;
     });
     req.on("end", () => {
@@ -193,94 +217,6 @@ function uniqueCode() {
   while (data.users.some((item) => item.loginCodeHash === secretHash(code)) || data.usedLoginCodeHashes.includes(secretHash(code)));
   return code;
 }
-function approvalEmail(user, code) {
-  const subject = "Votre espace Cœur & Connexions est confirmé";
-  const text = [
-    "♡ Cœur & Connexions", "",
-    "Votre demande est confirmée", "",
-    `Bonjour ${user.firstName},`, "",
-    "Votre espace est maintenant confirmé par l’équipe. Lors de votre première connexion, saisissez le code secret ci-dessous :", "",
-    code, "Ce code est personnel, à usage unique et valable 30 jours. Ne le partagez avec personne.", "",
-    "Cœur & Connexions facilite la prise de contact mais ne garantit ni l’identité, ni les intentions, ni le comportement des utilisateurs.",
-  ].join("\n");
-  return { to: user.email, subject, text, html: `<p>Bonjour ${escapeHtml(user.firstName)},</p><p>Votre espace est confirmé. Votre code de connexion :</p><h2>${code}</h2><p>Ce code est personnel, à usage unique et valable 30 jours.</p>` };
-}
-function passwordResetEmail(user, code) {
-  const subject = "Réinitialisation de votre mot de passe — Cœur & Connexions";
-  const text = [
-    "♡ Cœur & Connexions", "",
-    `Bonjour ${user.firstName},`, "",
-    "Vous avez demandé à modifier votre mot de passe. Saisissez le code suivant dans votre espace :", "",
-    code, "",
-    "Ce code est valable 15 minutes et ne peut être utilisé qu’une seule fois.", "",
-    "Si vous n’êtes pas à l’origine de cette demande, ignorez ce message.",
-  ].join("\n");
-  return { to: user.email, subject, text, html: `<p>Bonjour ${escapeHtml(user.firstName)},</p><p>Votre code de réinitialisation :</p><h2>${code}</h2><p>Ce code est valable 15 minutes et ne peut être utilisé qu’une seule fois.</p>` };
-}
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
-}
-function mailPublicConfig() {
-  return { mode: data.mailConfig.mode, domain: data.mailConfig.domain, baseUrl: data.mailConfig.baseUrl, apiKeyConfigured: Boolean(data.mailConfig.encryptedApiKey) };
-}
-function normalizedMailInput(input) {
-  const mode = input.mode === "mailgun" ? "mailgun" : "manual";
-  const baseUrl = String(input.baseUrl || "https://api.mailgun.net").trim().replace(/\/+$/, "");
-  const domain = String(input.domain || "").trim();
-  const apiKey = String(input.apiKey || "").trim();
-  if (mode === "mailgun") {
-    if (!apiKey && !data.mailConfig.encryptedApiKey) throw new Error("La clé API Mailgun est requise.");
-    if (!domain) throw new Error("Le domaine Mailgun est requis.");
-    let parsed;
-    try { parsed = new URL(baseUrl); } catch (_error) { throw new Error("L’URL de base Mailgun est invalide."); }
-    if (!["https:", "http:"].includes(parsed.protocol)) throw new Error("L’URL de base doit commencer par http:// ou https://.");
-  }
-  return { mode, baseUrl, domain, apiKey: apiKey || reveal(data.mailConfig.encryptedApiKey) || "" };
-}
-async function mailgunRequest(settings, endpoint, options = {}) {
-  const response = await fetch(`${settings.baseUrl}${endpoint}`, {
-    ...options,
-    headers: { Authorization: `Basic ${Buffer.from(`api:${settings.apiKey}`).toString("base64")}`, ...(options.headers || {}) },
-  });
-  const text = await response.text();
-  let payload;
-  try { payload = JSON.parse(text); } catch (_error) { payload = { message: text }; }
-  if (!response.ok) throw new Error(payload.message || `Mailgun a répondu avec le statut ${response.status}.`);
-  return payload;
-}
-async function verifyMailgun(settings) {
-  await mailgunRequest(settings, `/v3/domains/${encodeURIComponent(settings.domain)}`);
-  return true;
-}
-async function sendMailgun(settings, email) {
-  const form = new URLSearchParams({
-    from: `Cœur & Connexions <mailgun@${settings.domain}>`,
-    to: email.to,
-    subject: email.subject,
-    text: email.text,
-    html: email.html,
-  });
-  return mailgunRequest(settings, `/v3/${encodeURIComponent(settings.domain)}/messages`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: form.toString(),
-  });
-}
-function createEmailLog(email, provider, status, failureReason = null, extra = {}) {
-  const log = {
-    id: data.nextEmailLogId++,
-    provider,
-    recipient: email.to,
-    subject: email.subject,
-    status,
-    failureReason,
-    createdAt: new Date().toISOString(),
-    ...extra,
-  };
-  data.emailLogs.unshift(log);
-  writeData();
-  return log;
-}
 function adminRequired(req, res) {
   const current = getSession(req);
   if (!current || current.role !== "admin") { json(res, 401, { error: "Accès administrateur requis." }); return false; }
@@ -300,7 +236,6 @@ async function api(req, res, url) {
         adminEmailConfigured: Boolean(config.adminEmail),
         adminPasswordConfigured: Boolean(config.adminPassword),
         sessionSecretConfigured: Boolean(config.sessionSecret),
-        mail: mailPublicConfig(),
       },
     });
   }
@@ -321,42 +256,27 @@ async function api(req, res, url) {
       phone: String(input.phone).trim(), email, passwordHash: passwordHash(String(input.password)),
       gender: input.gender || "autre", encounterType: input.encounterType || "tous", accountType: input.accountType || "rencontre",
       planType: input.planType || "rencontre_simple", profilePhoto: input.profilePhoto || null,
-      photos: input.profilePhoto ? [input.profilePhoto] : [], status: "pending", firstLoginVerified: false,
-      loginCodeHash: secretHash(code), loginCodeExpiresAt: null, pendingLoginCode: protect(code),
+      photos: input.profilePhoto ? [input.profilePhoto] : [], status: "active", approvedAt: new Date().toISOString(), firstLoginVerified: false,
+      loginCodeHash: secretHash(code), loginCodeExpiresAt: new Date(Date.now() + CODE_TTL).toISOString(), pendingLoginCode: null,
       termsAcceptedAt: new Date().toISOString(), createdAt: new Date().toISOString(),
     };
     data.users.push(user); writeData();
-    return json(res, 201, { user: publicUser(user), pendingApproval: true });
+    return json(res, 201, { user: publicUser(user), loginCode: code });
   }
   if (method === "POST" && pathname === "/api/auth/forgot-password") {
     const input = await readBody(req);
     const email = String(input.email || "").trim().toLowerCase();
-    if (limited(req, res, "forgot", { ip: 10, id: 3, windowMs: 900_000 }, email)) return;
+    if (limited(req, res, "forgot", { ip: 10, id: 5, windowMs: 900_000 }, email)) return;
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json(res, 400, { error: "Saisissez une adresse email valide." });
-    const generic = { ok: true, message: "Si cette adresse correspond à un compte confirmé, un code de réinitialisation sera envoyé." };
     const user = data.users.find((item) => item.email === email && item.status === "active");
-    if (!user) return json(res, 200, generic);
+    if (!user || !samePhone(input.phone, user.phone)) return json(res, 401, { error: "Ces informations ne correspondent à aucun compte." });
     const code = uniqueCode();
     user.passwordResetCodeHash = secretHash(code);
-    user.passwordResetExpiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+    user.passwordResetExpiresAt = new Date(Date.now() + RESET_TTL).toISOString();
     user.passwordResetVerifiedAt = null;
-    user.pendingPasswordResetCode = protect(code);
-    const emailMessage = passwordResetEmail(user, code);
+    user.pendingPasswordResetCode = null;
     writeData();
-    if (data.mailConfig.mode === "mailgun") {
-      const settings = { ...data.mailConfig, apiKey: reveal(data.mailConfig.encryptedApiKey) };
-      try {
-        await sendMailgun(settings, emailMessage);
-        const emailLog = createEmailLog(emailMessage, "Mailgun", "sent", null, { kind: "password_reset" });
-        return json(res, 200, { ...generic, delivery: "automatic", emailLogId: emailLog.id });
-      } catch (error) {
-        createEmailLog(emailMessage, "Mailgun", "failed", error.message || "Envoi impossible.", { kind: "password_reset" });
-        return json(res, 502, { error: `L’envoi du code a échoué : ${error.message || "vérifiez la configuration Mailgun."}` });
-      }
-    }
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailMessage.to)}&su=${encodeURIComponent(emailMessage.subject)}&body=${encodeURIComponent(emailMessage.text)}`;
-    const emailLog = createEmailLog(emailMessage, "Envoi manuel", "draft", null, { kind: "password_reset", gmailUrl });
-    return json(res, 200, { ...generic, delivery: "manual", emailLogId: emailLog.id });
+    return json(res, 200, { ok: true, resetCode: code });
   }
   if (method === "POST" && pathname === "/api/auth/login") {
     const input = await readBody(req);
@@ -370,20 +290,31 @@ async function api(req, res, url) {
     }
     if (isAdminEmail) return json(res, 401, { error: "Identifiants invalides." });
     const user = data.users.find((item) => item.email === email);
-    if (!user || !verifyPassword(String(input.password || ""), user.passwordHash)) return json(res, 401, { error: "Identifiants invalides." });
-    if (user.status !== "active") return json(res, 403, { error: "Votre inscription est encore en attente de confirmation par l’administrateur." });
+    if (!user) return json(res, 401, { error: "Identifiants invalides." });
+    const password = String(input.password || "");
+    const oldMatches = verifyPassword(password, user.passwordHash);
+    if (user.pendingPasswordHash) {
+      if (oldMatches || verifyPassword(password, user.pendingPasswordHash)) return json(res, 403, { error: "Votre compte est en attente de confirmation par l’administrateur après la réinitialisation du mot de passe." });
+      return json(res, 401, { error: "Identifiants invalides." });
+    }
+    if (!oldMatches) return json(res, 401, { error: "Identifiants invalides." });
+    if (user.status !== "active") { user.status = "active"; user.approvedAt = new Date().toISOString(); user.firstLoginVerified = false; }
+    const remember = input.remember === true;
     if (!user.firstLoginVerified) {
       if (!user.loginCodeHash || !user.loginCodeExpiresAt || new Date(user.loginCodeExpiresAt) < new Date()) {
         const code = uniqueCode();
         user.loginCodeHash = secretHash(code);
         user.pendingLoginCode = protect(code);
-        user.loginCodeExpiresAt = new Date(Date.now() + 30 * 86400000).toISOString();
-        writeData();
+        user.loginCodeExpiresAt = new Date(Date.now() + CODE_TTL).toISOString();
       }
-      setSession(res, { role: "pending_2fa", id: user.id }, STEP_TTL);
-      return json(res, 200, { role: "user_pending", requiresCode: true, user: publicUser(user) });
+      let loginCode = null;
+      if (user.pendingLoginCode) { loginCode = reveal(user.pendingLoginCode); user.pendingLoginCode = null; }
+      writeData();
+      setSession(res, { role: "pending_2fa", id: user.id, remember }, STEP_TTL);
+      return json(res, 200, { role: "user_pending", requiresCode: true, loginCode, user: publicUser(user) });
     }
-    setSession(res, { role: "user", id: user.id });
+    setSession(res, { role: "user", id: user.id }, remember ? REMEMBER_TTL : SHORT_TTL, remember);
+    markOnline(user);
     return json(res, 200, { role: "user", user: publicUser(user) });
   }
   if (method === "POST" && pathname === "/api/auth/verify-code") {
@@ -396,7 +327,9 @@ async function api(req, res, url) {
     if (!user.loginCodeExpiresAt || new Date(user.loginCodeExpiresAt) < new Date() || secretHash(input.code) !== user.loginCodeHash) return json(res, 401, { error: "Code incorrect ou expiré." });
     data.usedLoginCodeHashes.push(user.loginCodeHash);
     user.loginCodeHash = null; user.loginCodeExpiresAt = null; user.firstLoginVerified = true; writeData();
-    const token = parseCookies(req).cc_session; if (token) sessions.set(token, { role: "user", id: user.id, expiresAt: Date.now() + SESSION_TTL });
+    const old = parseCookies(req).cc_session; if (old) sessions.delete(old);
+    setSession(res, { role: "user", id: user.id }, current.remember ? REMEMBER_TTL : SHORT_TTL, Boolean(current.remember));
+    markOnline(user);
     return json(res, 200, { role: "user", user: publicUser(user) });
   }
   if (method === "POST" && pathname === "/api/auth/verify-reset-code") {
@@ -413,6 +346,7 @@ async function api(req, res, url) {
     return json(res, 200, { ok: true });
   }
   if (method === "POST" && pathname === "/api/auth/reset-password") {
+    const token = parseCookies(req).cc_session;
     const current = getSession(req);
     if (!current || current.role !== "password_reset") return json(res, 401, { error: "Cette vérification a expiré. Recommencez la procédure." });
     const user = data.users.find((item) => item.id === current.id);
@@ -422,17 +356,29 @@ async function api(req, res, url) {
     }
     if (String(input.password || "").length < 8) return json(res, 400, { error: "Le nouveau mot de passe doit contenir au moins 8 caractères." });
     if (input.password !== input.passwordConfirmation) return json(res, 400, { error: "Les deux mots de passe ne correspondent pas." });
-    user.passwordHash = passwordHash(String(input.password));
+    const whatsappReady = config.adminWhatsapp.length >= 8;
     user.passwordResetCodeHash = null;
     user.passwordResetExpiresAt = null;
     user.passwordResetVerifiedAt = null;
     user.pendingPasswordResetCode = null;
+    if (whatsappReady) {
+      user.pendingPasswordHash = passwordHash(String(input.password));
+      user.passwordChangeRequestedAt = new Date().toISOString();
+    } else {
+      user.passwordHash = passwordHash(String(input.password));
+      user.pendingPasswordHash = null;
+      user.passwordChangeRequestedAt = null;
+    }
+    holdUserSessions(user);
     writeData();
-    setSession(res, { role: "user", id: user.id });
-    return json(res, 200, { ok: true, user: publicUser(user) });
+    if (token) sessions.delete(token);
+    res.setHeader("Set-Cookie", `cc_session=; ${cookieFlags()}; Max-Age=0`);
+    if (!whatsappReady) return json(res, 200, { ok: true, applied: true, whatsapp: null });
+    const text = `Bonjour, j’ai demandé un nouveau mot de passe sur Cœur & Connexions. Nom : ${user.firstName} ${user.lastName}. E-mail : ${user.email}. Merci de le confirmer.`;
+    return json(res, 200, { ok: true, pendingAdmin: true, whatsapp: `https://wa.me/${config.adminWhatsapp}?text=${encodeURIComponent(text)}` });
   }
   if (method === "POST" && pathname === "/api/auth/logout") {
-    const token = parseCookies(req).cc_session; if (token) sessions.delete(token);
+    const token = parseCookies(req).cc_session; const ended = token ? sessions.get(token) : null; if (ended?.role === "user") markOffline(ended.id); if (token) sessions.delete(token);
     res.setHeader("Set-Cookie", `cc_session=; ${cookieFlags()}; Max-Age=0`);
     return json(res, 200, { ok: true });
   }
@@ -467,46 +413,26 @@ async function api(req, res, url) {
     return json(res, 200, publicUser(user));
   }
   if (method === "GET" && pathname === "/api/admin/users") {
-    if (!adminRequired(req, res)) return; return json(res, 200, data.users.map(publicUser));
+    if (!adminRequired(req, res)) return; return json(res, 200, data.users.map((u) => ({ ...publicUser(u), profilePhoto: null, passwordChangePending: Boolean(u.pendingPasswordHash), ...presenceOf(u) })));
   }
-  if (method === "GET" && pathname === "/api/admin/email-logs") {
-    if (!adminRequired(req, res)) return; return json(res, 200, data.emailLogs);
-  }
-  if (method === "GET" && pathname === "/api/admin/mail-config") {
-    if (!adminRequired(req, res)) return; return json(res, 200, mailPublicConfig());
-  }
-  if (method === "POST" && pathname === "/api/admin/mail-config/test") {
+  if (method === "GET" && pathname === "/api/admin/password-requests") {
     if (!adminRequired(req, res)) return;
-    try {
-      const settings = normalizedMailInput(await readBody(req));
-      if (settings.mode === "mailgun") await verifyMailgun(settings);
-      data.mailConfig = { mode: settings.mode, domain: settings.domain, baseUrl: settings.baseUrl, encryptedApiKey: settings.apiKey ? protect(settings.apiKey) : data.mailConfig.encryptedApiKey };
-      writeData();
-      return json(res, 200, { ok: true, message: settings.mode === "mailgun" ? "Connexion Mailgun vérifiée et enregistrée." : "Le mode manuel est enregistré.", config: mailPublicConfig() });
-    } catch (error) { return json(res, 400, { error: error.message || "Vérification Mailgun impossible." }); }
+    return json(res, 200, data.users.filter((u) => u.pendingPasswordHash)
+      .map((u) => ({ id: u.id, firstName: u.firstName, lastName: u.lastName, email: u.email, phone: u.phone, requestedAt: u.passwordChangeRequestedAt || null })));
   }
-  const approve = pathname.match(/^\/api\/admin\/users\/(\d+)\/approve$/);
-  if (method === "POST" && approve) {
+  const pwDecision = pathname.match(/^\/api\/admin\/password-requests\/(\d+)\/(confirm|reject)$/);
+  if (method === "POST" && pwDecision) {
     if (!adminRequired(req, res)) return;
-    const user = data.users.find((item) => item.id === Number(approve[1]));
-    if (!user) return json(res, 404, { error: "Profil introuvable." });
-    user.status = "active"; user.approvedAt = new Date().toISOString(); user.firstLoginVerified = false;
-    const code = reveal(user.pendingLoginCode) || uniqueCode();
-    user.loginCodeHash = secretHash(code); user.loginCodeExpiresAt = new Date(Date.now() + 30 * 86400000).toISOString(); user.pendingLoginCode = null;
-    const email = approvalEmail(user, code); writeData();
-    if (data.mailConfig.mode === "mailgun") {
-      const settings = { ...data.mailConfig, apiKey: reveal(data.mailConfig.encryptedApiKey) };
-      try {
-        await sendMailgun(settings, email);
-        const emailLog = createEmailLog(email, "Mailgun", "sent");
-        return json(res, 200, { user: publicUser(user), sent: true, emailLog });
-      } catch (error) {
-        const emailLog = createEmailLog(email, "Mailgun", "failed", error.message || "Envoi impossible.");
-        return json(res, 502, { error: `Profil confirmé, mais l’envoi Mailgun a échoué : ${error.message}`, user: publicUser(user), emailLog });
-      }
+    const user = data.users.find((item) => item.id === Number(pwDecision[1]));
+    if (!user || !user.pendingPasswordHash) return json(res, 404, { error: "Demande introuvable." });
+    if (pwDecision[2] === "confirm") {
+      user.passwordHash = user.pendingPasswordHash;
+      holdUserSessions(user);
     }
-    const emailLog = createEmailLog(email, "Envoi manuel", "draft");
-    return json(res, 200, { user: publicUser(user), sent: false, email: { to: email.to, subject: email.subject, body: email.text, gmailUrl: `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email.to)}&su=${encodeURIComponent(email.subject)}&body=${encodeURIComponent(email.text)}` }, emailLog });
+    user.pendingPasswordHash = null;
+    user.passwordChangeRequestedAt = null;
+    writeData();
+    return json(res, 200, { ok: true });
   }
   if (method === "POST" && pathname === "/api/admin/announcements") {
     if (!adminRequired(req, res)) return;
@@ -524,10 +450,11 @@ async function api(req, res, url) {
     const message = { id: data.nextMessageId++, userId: parent.userId, senderRole: "admin", body: String(input.body).trim(), createdAt: new Date().toISOString() };
     data.messages.push(message); writeData(); return json(res, 201, message);
   }
+  if (await plans.handle(req, res, url)) return;
   return json(res, 404, { error: "Route introuvable." });
 }
-function serveHtml(res) {
-  const body = fs.readFileSync(INDEX_FILE, "utf8");
+function serveHtml(res, file = INDEX_FILE) {
+  const body = fs.readFileSync(file, "utf8");
   res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Content-Length": Buffer.byteLength(body), "Cache-Control": "no-store" });
   res.end(body);
 }
@@ -542,6 +469,7 @@ const server = http.createServer(async (req, res) => {
       if (req.method !== "GET" && req.method !== "HEAD" && !sameOrigin(req)) return json(res, 403, { error: "Origine non autorisée." });
       return await api(req, res, url);
     }
+    if (url.pathname === "/success.html" || url.pathname === "/success") return serveHtml(res, SUCCESS_FILE);
     return serveHtml(res);
   } catch (error) {
     if (error.status) return json(res, error.status, { error: error.message });
